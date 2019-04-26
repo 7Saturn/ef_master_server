@@ -27,13 +27,13 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=2
-FILE_NAME_0=0;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC#%2FMasterserver%2FExceptions.cs;0;4
-FILE_NAME_1=0;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC#%2FMasterserver%2FHeartbeatListener.cs;0;4
-FILE_NAME_2=1546;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC#%2FMasterserver%2FMasterserver.cs;0;4
-FILE_NAME_3=0;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC#%2FMasterserver%2FQueryStrings.cs;0;4
-FILE_NAME_4=850;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC#%2FMasterserver%2FServerEntry.cs;0;4
-FILE_NAME_5=0;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC#%2FMasterserver%2FServerList.cs;0;4
+current_page=4
+FILE_NAME_0=0;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC%23%2FMasterserver%2FExceptions.cs;0;4
+FILE_NAME_1=0;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC%23%2FMasterserver%2FHeartbeatListener.cs;0;4
+FILE_NAME_2=1546;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC%23%2FMasterserver%2FMasterserver.cs;0;4
+FILE_NAME_3=0;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC%23%2FMasterserver%2FQueryStrings.cs;0;4
+FILE_NAME_4=6586;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC%23%2FMasterserver%2FServerEntry.cs;0;4
+FILE_NAME_5=1666;C#;0;EUTF-8;0;1;1;%2Fhome%2Fmartin%2Fnas%2FArchiv%2FProgrammierung%2FC%23%2FMasterserver%2FServerList.cs;0;4
 
 [VTE]
 last_dir=/home/martin
