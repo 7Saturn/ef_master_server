@@ -45,10 +45,20 @@ public static class ServerList {
 	}
 	
 	public static void Cleanup() {
+        List<Thread> threadlist = new List<Thread>();
 		foreach (ServerEntry serverentry in ServerList.get_list()) {
-			serverentry.QueryDataThreaded();
+			Thread thisthread = serverentry.QueryDataThreaded();
+            threadlist.Add(thisthread);
 		}
-		Thread.Sleep(Masterserver.timeoutms);
+        while (threadlist.Count != 0) {
+            List<Thread> residualthreadlist = new List <Thread>();
+            foreach(Thread thisthread in threadlist) {
+                if (thisthread.IsAlive) {
+                    residualthreadlist.Add(thisthread);
+                }
+            }
+            threadlist = residualthreadlist;
+        }
 		List<ServerEntry> looptemp = ServerList.get_list();
 		int number_of_all = ServerList.get_list().Count;
 		if (number_of_all == 0) {

@@ -84,9 +84,10 @@ public class ServerEntry : IEquatable<ServerEntry>{
 		return this.server_entry_in_hex();
 	}
 	
-	public void QueryDataThreaded() {
+	public Thread QueryDataThreaded() {
 		Thread thread = new Thread(new ThreadStart(this.QueryData));
 		thread.Start();
+        return thread;
 	}
 	
 	public void QueryData() {
@@ -104,16 +105,16 @@ public class ServerEntry : IEquatable<ServerEntry>{
         }
 		try{
 			udpClient.Connect(destination_ip, destination_port);
-			Masterserver.DebugMessage("Got Connect");
+			Masterserver.DebugMessage("Got Connect to "+this.ToString());
 			byte[] server_status_query_head = QueryStrings.GetArray("server_status_query_head");
 			byte[] server_response_head = QueryStrings.GetArray("server_status_answer_head");
 			int server_response_head_length = Encoding.ASCII.GetString(server_response_head).Length;
 
             byte[] sendBytes = server_status_query_head;
-			Masterserver.DebugMessage("Sending...");
+			Masterserver.DebugMessage("Sending to "+this.ToString()+"...");
             udpClient.Send(sendBytes, sendBytes.Length);
 
-			Masterserver.DebugMessage("Waiting for response...");
+			Masterserver.DebugMessage("Waiting for response from "+this.ToString()+"...");
             IPEndPoint RemoteIpEndPoint = new IPEndPoint(destination_ip, destination_port);
 
             // Won't block the entire program, but requires a reasonable timeout value
@@ -134,7 +135,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
 				}
 			}
 			if (receiveBytes == null) {
-				Masterserver.DebugMessage("Nothing ever came...");
+				Masterserver.DebugMessage("Nothing ever came from "+this.ToString()+".");
 				udpClient.Close();
 				return;
 			}
@@ -142,9 +143,9 @@ public class ServerEntry : IEquatable<ServerEntry>{
             Byte[] start = receiveBytes.Take(server_response_head_length).ToArray();
             Byte[] ende  = receiveBytes.Skip(server_response_head_length+1).ToArray();
             
-            Masterserver.DebugMessage("Received data...");
+            Masterserver.DebugMessage("Received data from "+this.ToString()+".");
             if (start.SequenceEqual(server_response_head)) {
-				Masterserver.DebugMessage("And I found an expected header...");
+				Masterserver.DebugMessage("Found an expected header from "+this.ToString()+".");
                 string returnData = Encoding.ASCII.GetString(ende);
                 string[] bloecke = returnData.Split('"');
                 if (bloecke.Length != 2) {
@@ -152,7 +153,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
 					return;
 				}
 				string datenblock = bloecke[0].Substring(1);
-				Masterserver.DebugMessage("Received data: "+datenblock);
+				Masterserver.DebugMessage("Received data '"+datenblock+"' from "+this.ToString());
 				List<string> parameter_liste = datenblock.Split('\\').ToList();
 				if (parameter_liste.Count() % 2 == 1) {
 					this.protocol = 0;
@@ -171,10 +172,10 @@ public class ServerEntry : IEquatable<ServerEntry>{
 				}
 				string protocol;
 				if (!parameter_hash.TryGetValue("protocol", out protocol)) {
-					Masterserver.DebugMessage("Didn't receive any protocol.");
+					Masterserver.DebugMessage("Didn't receive any protocol from "+this.ToString()+".");
 					SetProtocol("0");
 				} else {
-					Masterserver.DebugMessage("Protocol "+protocol+" received.");
+					Masterserver.DebugMessage("Protocol "+protocol+" received from "+this.ToString()+".");
 					SetProtocol(protocol);
 				}
 				string sv_maxclients;
@@ -197,7 +198,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
 				}
 				return;
             } else {
-				Masterserver.DebugMessage("Unrecognized response: }"+Encoding.ASCII.GetString(receiveBytes));
+				Masterserver.DebugMessage("Unrecognized response '"+Encoding.ASCII.GetString(receiveBytes)+"' from "+this.ToString());
 				this.protocol = 0;
 				udpClient.Close();
 				return;
