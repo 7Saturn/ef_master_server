@@ -10,7 +10,7 @@ class HeartbeatListener {
     {
         UdpClient listener = new UdpClient((int)listenPort);
         IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, listenPort);
-        if (Masterserver.GetVerbose()) {Console.WriteLine("Starting EF master server ver. {0}...", Masterserver.VersionString);}
+        if (Proxy.GetVerbose()) {Console.WriteLine("Starting EF master server ver. {0}...", Proxy.VersionString);}
         try
         {
             while (true)
@@ -18,17 +18,17 @@ class HeartbeatListener {
                 byte[] receivedbytes = listener.Receive(ref groupEP);
                 ushort destination_port = (ushort)groupEP.Port;
                 if (IsHeartbeatRequest(receivedbytes, destination_port)) {
-					if (Masterserver.GetVerbose()) {Console.WriteLine("---- Received heartbeat from {0} ----", groupEP);}
+					if (Proxy.GetVerbose()) {Console.WriteLine("---- Received heartbeat from {0} ----", groupEP);}
 					IPAddress address = groupEP.Address;
 					ushort port = (ushort)groupEP.Port;
 					ServerEntry new_one = new ServerEntry(address, port);
 					ServerList.AddServer(new_one);
-					new_one.QueryData();
-					Masterserver.DebugMessage("Cleaning up...");
+					new_one.QueryInfo();
+					Proxy.DebugMessage("Cleaning up...");
 					ServerList.Cleanup();
-					Masterserver.DebugMessage("New ones protocol: "+ new_one.GetProtocol());
+					Proxy.DebugMessage("New ones protocol: "+ new_one.GetProtocol());
 				} else if (IsListRequest(receivedbytes)) {
-                    Masterserver.DebugMessage("---- Received server query request from " + groupEP + " ----");
+                    Proxy.DebugMessage("---- Received server query request from " + groupEP + " ----");
 					ServerList.Cleanup();
 					byte[] server_list_query_head = QueryStrings.GetArray("server_list_query_head");
 					string rest = Encoding.ASCII.GetString(receivedbytes.Skip(server_list_query_head.Length).ToArray()).ToLower();
@@ -48,18 +48,18 @@ class HeartbeatListener {
 							filtered.Add(original_entry);
 						}
 					}
-					byte[] getserversResponse = QueryStrings.GetArray("server_list_response_head");
+					byte[] getserversResponse = QueryStrings.GetArray("server_list_response_head_space");
 					byte[] server_list = Encoding.ASCII.GetBytes(ServerList.ToStringList(filtered));
 					byte[] eot = QueryStrings.GetArray("eot");
 					byte[] query = null;
 					query = QueryStrings.ConcatByteArray(new byte[][] {getserversResponse, server_list, eot});
 					string sendstring = Encoding.ASCII.GetString(query, 0, query.Length);
-					Masterserver.DebugMessage("Sending this: '"+sendstring+"'");
+					Proxy.DebugMessage("Sending this: '"+sendstring+"'");
 					listener.Send(query, query.Length, groupEP);
 
 				} else {
-					Masterserver.DebugMessage("I got that stuff here. Do you recognize any of this?!?");
-					Masterserver.DebugMessage(Encoding.ASCII.GetString(receivedbytes));
+					Proxy.DebugMessage("I got that stuff here. Do you recognize any of this?!?");
+					Proxy.DebugMessage(Encoding.ASCII.GetString(receivedbytes));
 				}
             }
         }
@@ -74,20 +74,21 @@ class HeartbeatListener {
             listener.Close();
         }
     }
+
     private static bool IsHeartbeatRequest(byte[] received, ushort port) {
-        Masterserver.DebugMessage("IsHeartbeatRequest\nreceived: '"+Encoding.ASCII.GetString(received)+"', port: "+port+"");
+        Proxy.DebugMessage("IsHeartbeatRequest\nreceived: '"+Encoding.ASCII.GetString(received)+"', port: "+port+"");
 		if (received == null) {return false;}
 		byte[] heartbeat_signal = QueryStrings.GetHeartbeatComparison(port);
-        Masterserver.DebugMessage("comparison: "+Encoding.ASCII.GetString(heartbeat_signal));
+        Proxy.DebugMessage("comparison: "+Encoding.ASCII.GetString(heartbeat_signal));
 		if (received.Length < heartbeat_signal.Length) {return false;}
 		return ByteArraysAreEqual(received, heartbeat_signal);
 	}
 	
 	private static bool IsListRequest(byte[] received) {
-        Masterserver.DebugMessage("IsListRequest\nreceived: '"+Encoding.ASCII.GetString(received)+"'");
+        Proxy.DebugMessage("IsListRequest\nreceived: '"+Encoding.ASCII.GetString(received)+"'");
 		if (received == null) {return false;}
 		byte[] server_list_query_head = QueryStrings.GetArray("server_list_query_head");
-        Masterserver.DebugMessage("comparison: "+Encoding.ASCII.GetString(server_list_query_head));
+        Proxy.DebugMessage("comparison: "+Encoding.ASCII.GetString(server_list_query_head));
 		if (received.Length < server_list_query_head.Length) {return false;}
 		return ByteArraysAreEqual(received, server_list_query_head);
 	}
