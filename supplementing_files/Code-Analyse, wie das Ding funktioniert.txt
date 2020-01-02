@@ -1,0 +1,83 @@
+====== Serverlistenaustausch (bestätigt) ======
+=== Anfrage, wer gelistet ist (bestätigt) ===
+Startet mit "ÿÿÿÿgetservers xx"
+
+Mit xx = Version --> Wird zum Vergleich genommen, welche Server zurückgeschickt werden, nur die gleichen, es ist ein zwei-Ziffern-Wert
+
+Weitere Werte scheinen mit Spaces getrennt zu werden
+
+Kommt "empty" vor? --> Leere Server mit senden --> Muss also erst mal alles abfragen, um zu sehen, ob sie leer sind.
+Kommt "full" vor? --> Volle Server mit senden
+=== Antwort in Form der Serverliste (bestätigt) ===
+Start mit "ÿÿÿÿgetserversResponse \" + serveradressenblock + "\EOT"
+
+serveradressenblock: Mehrere Server werden mit "\" getrennt angegeben, je Server immer 8 bytes server IP + 4 bytes Server port, in Hex-Darstellung.
+====== Beim Server melden ======
+=== sich melden ===
+Startet mit "ÿÿÿÿ\heartbeat\"
+
+Fortgesetzt wird mit einer dezimalen Portnummer (eigentlich redundant, weil dieser vom Absender bereits bekannt ist).
+
+Danach kommt statisch "\gamename\STEF1\", wobei STEF1 die Spielvariante bezeichnet
+
+Absender-Adresse und Port sind die vom Game-Server und werden vom Master-Server als zu speichernd behandelt.
+Oder der Master gibt generell nichts zurück, wenn man nur heartbeatet.
+====== Beim Server abmelden ======
+ÿÿÿÿ\heartstop\27960\gamename\STEF1\
+====== Einen Spiele-Server abfragen ======
+=== Meldung bestätigen (unbestätigt) ===
+"ÿÿÿÿgetinfo " + Challenge
+oder:
+"ÿÿÿÿgetinfo xxx"
+=== Antwort auf Abfrage ===
+Empfangenes startet mit 'ÿÿÿÿinfoResponse "'
+und Ende mit '"'. Dazwischen sind die daten von der Form
+
+"\Bezeichner\Wert"
+
+und enden mit
+
+"\challenge\xxx"
+
+InStr(0, data, "\challenge\" & TickCount & "\") --> Nix machen
+Bezeichner:     Bedeutung
+game:           Welches Spiel, z. B. "pinball", "baseEF", ist anscheinend optional
+voip:           Welcher VOIP-Codec, z. B. "opus"
+g_needpass:     Braucht man ein Passwort? 1 oder 0
+pure:           Dürfen nur pk3s verwendet werden, die gleich denen auf dem Server sind? 1 oder 0
+gametype:       Wert von 0 bis 4
+sv_maxclients:  Maximale Anzahl Spieler gesamt
+g_humanplayers: Wie viele echte Spieler sind unterwegs?
+clients:        Wie viele sind gerade auf dem Server unterwegs?
+mapname:        (Technischer) Name der aktuell gerade laufenden Map.
+hostname:       Wie wird der Server bezeichnet?
+protocol:       Welche Version? (Lilium hat 24)
+gamename:       Welches Spiel? (z. B. EliteForce)
+
+------------------------------------------------
+
+Listen-Struktur:
+0 Server-IP
+1 Server-Port
+2 Last time seen
+3 Protokoll
+4 Spieler
+5 maximale Spieler
+6 tickCount
+
+z. B. "lstServers.ListItems(server).ListSubItems(1).text" gibt Port
+
+wskMaster ist der Socket, der macht die Kommunikation
+wskMaster.RemoteHost Adresse für Ziel-Rechner
+wskMaster.RemoteHostIP IP für Ziel-Rechner
+wskMaster.RemotePort Port für Ziel-Rechner
+wskMaster.Bind <port> Lokalen Port festlegen
+wskMaster.LocalIP <IP> Lokale IP, auf der gehört werden soll
+wskMaster.SendData Daten senden
+wskMaster.Close Verbindung beenden
+wskMaster.GetData Daten aus Verbindung holen
+
+
+
+
+490

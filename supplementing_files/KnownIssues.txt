@@ -1,0 +1,10 @@
+﻿Probleme:
+
+Verbindung zwischen sich meldendem Server und Master bleibt aufrecht?
+Master-Query sollte in regelmäßigen Intervallen stattfinden. Ggf. Quelle im server Entry speichern, damit nur Server gespeichert werden, die man tatsächlich selbst gemeldet bekommen hat.
+Offene Ideen:
+Server Entries aus File lesen und in File speichern, dessen Name über die Konsole übergeben wird. Methoden dazu:
+    string text = File.ReadAllText(@"c:\file.txt", Encoding.UTF8);
+    boolean laber = File.Exists(@"c:\temp\test.txt");
+    File.WriteAllText(@"c:\temp\MyTest.txt", textString);
+
