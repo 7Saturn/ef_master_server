@@ -6,67 +6,68 @@ using System.Net;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 public static class ServerList {
-	private static List<ServerEntry> serverlist = null;
+    private static List<ServerEntry> serverlist = null;
 
-	public static List<ServerEntry> get_list() {
-		if (serverlist == null) {
-			serverlist = new List<ServerEntry>();
-		}
-		return serverlist;
-	}
-	
-	public static string ToStringList (List<ServerEntry> original_list) {
-		string text_list = "";
-		foreach (ServerEntry eintrag in original_list) {
-			if (!eintrag.ToString().Equals("")) {
+    public static List<ServerEntry> get_list() {
+        if (serverlist == null) {
+            serverlist = new List<ServerEntry>();
+        }
+        return serverlist;
+    }
+
+    public static string ToStringList (List<ServerEntry> original_list) {
+        string text_list = "";
+        foreach (ServerEntry eintrag in original_list) {
+            if (!eintrag.ToString().Equals("")) {
                 text_list += "\\"+eintrag.ToString();
             }
-		}
-		return text_list;
-		
-	}
-	
-	public static string get_text_list() {
-		return ToStringList(ServerList.get_list());
-	}
-	
-	public static void AddServer(ServerEntry new_one) {
+        }
+        return text_list;
+
+    }
+
+    public static string get_text_list() {
+        return ToStringList(ServerList.get_list());
+    }
+
+    public static void AddServer(ServerEntry new_one) {
         Masterserver.DebugMessage("Trying to add "+new_one.ToString());
-		if (!ServerList.get_list().Contains(new_one)) {
-			Masterserver.DebugMessage("A new one arrived, querying data...");
+        if (!ServerList.get_list().Contains(new_one)) {
+            Masterserver.DebugMessage("A new one arrived, querying data...");
             //Stopwatch stopwatch = new Stopwatch();
             //stopwatch.Start();
             new_one.QueryInfo();
             //stopwatch.Stop();
             //Masterserver.DebugMessage("Time elapsed: "+stopwatch.ElapsedMilliseconds+"ms.");
             //stopwatch.Reset();
-			ServerList.get_list().Add(new_one);
-			Masterserver.DebugMessage("Now list looks like this: "+ServerList.get_text_list());
-		} else {
-			Masterserver.DebugMessage("A known one");
-			ServerEntry old_one = ServerList.get_list().Find(x => x.Equals(new_one));
-			Masterserver.DebugMessage("Old protocol: "+old_one.GetProtocol());
-			Masterserver.DebugMessage("New protocol: "+new_one.GetProtocol());
+            ServerList.get_list().Add(new_one);
+            Masterserver.DebugMessage("Now list looks like this: "+ServerList.get_text_list());
+        } else {
+            Masterserver.DebugMessage("A known one");
+            ServerEntry old_one = ServerList.get_list().Find(x => x.Equals(new_one));
+            Masterserver.DebugMessage("Old protocol: "+old_one.GetProtocol());
+            Masterserver.DebugMessage("New protocol: "+new_one.GetProtocol());
             Masterserver.DebugMessage("So got to query that one again...");
-			old_one.QueryInfo();
-		}
-	}
-	
-	public static void RemoveServer(ServerEntry to_remove) {
-		if (ServerList.get_list().Contains(to_remove)) {
-			ServerList.get_list().Remove(to_remove);
-		}
-	}
-	
-	public static void Cleanup() {
+            old_one.QueryInfo();
+        }
+    }
+
+    public static void RemoveServer(ServerEntry to_remove) {
+        if (ServerList.get_list().Contains(to_remove)) {
+            ServerList.get_list().Remove(to_remove);
+        }
+    }
+
+    public static void Cleanup() {
         Masterserver.DebugMessage("Cleaning up server list...");
         List<Thread> threadlist = new List<Thread>();
-		foreach (ServerEntry serverentry in ServerList.get_list()) {
-			Thread thisthread = serverentry.QueryInfoThreaded();
+        foreach (ServerEntry serverentry in ServerList.get_list()) {
+            Thread thisthread = serverentry.QueryInfoThreaded();
             threadlist.Add(thisthread);
-		}
+        }
         while (threadlist.Count != 0) {
             List<Thread> residualthreadlist = new List <Thread>();
             foreach(Thread thisthread in threadlist) {
@@ -76,19 +77,19 @@ public static class ServerList {
             }
             threadlist = residualthreadlist;
         }
-		List<ServerEntry> looptemp = ServerList.get_list();
-		int number_of_all = ServerList.get_list().Count;
-		if (number_of_all == 0) {
-			return;
-		}
-		
-		for (int counter = number_of_all-1;counter >= 0;counter--) {
-			if (ServerList.get_list()[counter].GetProtocol() == 0) {
-				ServerList.RemoveServer(looptemp[counter]);
-			}
-		}
-		Masterserver.DebugMessage("Now list looks like this: "+ServerList.get_text_list());
-	}
+        List<ServerEntry> looptemp = ServerList.get_list();
+        int number_of_all = ServerList.get_list().Count;
+        if (number_of_all == 0) {
+            return;
+        }
+
+        for (int counter = number_of_all-1;counter >= 0;counter--) {
+            if (ServerList.get_list()[counter].GetProtocol() == 0) {
+                ServerList.RemoveServer(looptemp[counter]);
+            }
+        }
+        Masterserver.DebugMessage("Now list looks like this: "+ServerList.get_text_list());
+    }
 
     public static void AddServerListFromMaster(string master_host, ushort master_port) {
         byte[] server_list_query_head = QueryStrings.GetArray("server_list_query_head");
@@ -153,11 +154,11 @@ public static class ServerList {
             Byte[]  tail = receiveBytes.Skip(receiveBytes.Length-eot.Length).ToArray();
             Byte[]  data = receiveBytes.Skip(server_list_answer_head.Length+1).ToArray();
             data = data.Take(data.Length-eot.Length).ToArray();
-            
-            
+
+
             if (start.SequenceEqual(server_list_answer_head) && tail.SequenceEqual(eot)) {
                 Masterserver.DebugMessage("Answer is valid.");
-                
+
                 string returnData = Encoding.ASCII.GetString(data);
                 Masterserver.DebugMessage("Data-String: '" + returnData + "'");
                 string[] adressen = returnData.Split('\\');
@@ -196,6 +197,52 @@ public static class ServerList {
                     Parser.DumpBytes(receiveBytes);
                 }
             }
+        }
+    }
+
+    public static void QueryOtherMasters(string[] masterServerArray) {
+        Masterserver.DebugMessage("Querying provided master servers...");
+        foreach (string masterServer in masterServerArray) {
+            Masterserver.DebugMessage("Working on master server '" + masterServer + "'...");
+            ushort master_port = 27953;
+            string master_host = null;
+            if (!masterServer.Equals("")) {
+                string[] serverParts = Regex.Split(masterServer, ":");
+                int temp_port = 0;
+                if (serverParts.Length == 1) {
+                    master_host = serverParts[0];
+                } else if (serverParts.Length == 2) {
+                    master_host = serverParts[0];
+                    Int32.TryParse(serverParts[1], out temp_port);
+                    master_port = (ushort)temp_port;
+                } else {
+                    //IPv6...
+                    Match parts = Regex.Match(masterServer, "$(.*):(\\d)^");
+                    if (parts.Success) {
+                        master_host = parts.Value;
+                        parts = parts.NextMatch();
+                        Int32.TryParse(parts.Value, out temp_port);
+                        master_port = (ushort)temp_port;
+                    }
+                }
+                if (master_host != null && master_port != 0) {
+                    Console.WriteLine("Querying master server '{0}'", masterServer);
+                    ServerList.AddServerListFromMaster(master_host, master_port);
+                }
+            }
+        }
+    }
+
+    public static void QueryOtherMastersThreaded(string[] masterServerArray, int interval) {
+        Masterserver.DebugMessage("Querying provided master servers in intervals of " + interval + "s.");
+        Thread thread = new Thread(() => ServerList.StartQueryOtherMastersThread(masterServerArray, interval));
+        thread.Start();
+    }
+
+    private static void StartQueryOtherMastersThread(string[] masterServerArray, int interval) {
+        while (true) {
+            ServerList.QueryOtherMasters(masterServerArray);
+            System.Threading.Thread.Sleep(interval * 1000);
         }
     }
 }

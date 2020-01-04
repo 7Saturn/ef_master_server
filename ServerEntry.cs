@@ -8,30 +8,30 @@ using System.Threading;
 using System.Text.RegularExpressions;
 
 public class ServerEntry : IEquatable<ServerEntry>{
-	ushort port;
-	IPAddress address;
-	int protocol = 0;
-	bool full = false;
-	bool empty = false;
+    ushort port;
+    IPAddress address;
+    int protocol = 0;
+    bool full = false;
+    bool empty = false;
     private Dictionary <string,string> query_values = new Dictionary <string,string>();
     private List<Player> playerList = new List<Player>();
-    
-	public ServerEntry() {
-		this.port = 0;
-		this.address = null;
-	}
 
-	public ServerEntry(IPAddress ip, ushort port) {
-		this.port = port;
-		this.address = ip;
-	}
-	
-	public ServerEntry(string ip, ushort port) {
-		this.port = port;
-		this.address = IPAddress.Parse(ip);
-	}
-	
-	public ServerEntry(string ip_port):base() {
+    public ServerEntry() {
+        this.port = 0;
+        this.address = null;
+    }
+
+    public ServerEntry(IPAddress ip, ushort port) {
+        this.port = port;
+        this.address = ip;
+    }
+
+    public ServerEntry(string ip, ushort port) {
+        this.port = port;
+        this.address = IPAddress.Parse(ip);
+    }
+
+    public ServerEntry(string ip_port):base() {
         Masterserver.DebugMessage("ServerEntry("+ip_port+")");
         string ip_port_pattern = "[\\d,A-F,a-f]{12}";
         Regex checker = new Regex (ip_port_pattern);
@@ -48,96 +48,96 @@ public class ServerEntry : IEquatable<ServerEntry>{
             Masterserver.DebugMessage("Warning: No valid address string provided!");
         }
         Masterserver.DebugMessage("/ServerEntry(string)");
-	}
-	
-	public bool IsFull() {
-		return full;
-	}
-	
-	public bool IsEmpty() {
-		return empty;
-	}
-	
-	private string port_in_hex() {
-		return string.Format("{0:x2}", this.port);
-	}
-	
-	private void SetProtocol(string protocol) {
-		Masterserver.DebugMessage("SetProtocol(string protocol)");
-		if (!Int32.TryParse(protocol, out this.protocol)) {
-			this.protocol = 0;
-		}
-		Masterserver.DebugMessage("Set protocol to: "+this.protocol);
-	}
+    }
 
-	private void SetProtocol(int protocol) {
-		Masterserver.DebugMessage("SetProtocol(int protocol)");
-		this.protocol = protocol;
-		Masterserver.DebugMessage("Set protocol to: "+this.protocol);
-	}
-	
-	public int GetProtocol() {
-		return this.protocol;
-	}
-	
-	private string ip_in_hex() {
-		byte[] addressbytes = this.address.GetAddressBytes();
-		string first = string.Format("{0:x2}", (int)addressbytes[0]);
-		string second = string.Format("{0:x2}", (int)addressbytes[1]);
-		string third = string.Format("{0:x2}", (int)addressbytes[2]);
-		string fourth = string.Format("{0:x2}", (int)addressbytes[3]);
-		return first+second+third+fourth;
-	}
-	
-	private string server_entry_in_hex() {
+    public bool IsFull() {
+        return full;
+    }
+
+    public bool IsEmpty() {
+        return empty;
+    }
+
+    private string port_in_hex() {
+        return string.Format("{0:x2}", this.port);
+    }
+
+    private void SetProtocol(string protocol) {
+        Masterserver.DebugMessage("SetProtocol(string protocol)");
+        if (!Int32.TryParse(protocol, out this.protocol)) {
+            this.protocol = 0;
+        }
+        Masterserver.DebugMessage("Set protocol to: "+this.protocol);
+    }
+
+    private void SetProtocol(int protocol) {
+        Masterserver.DebugMessage("SetProtocol(int protocol)");
+        this.protocol = protocol;
+        Masterserver.DebugMessage("Set protocol to: "+this.protocol);
+    }
+
+    public int GetProtocol() {
+        return this.protocol;
+    }
+
+    private string ip_in_hex() {
+        byte[] addressbytes = this.address.GetAddressBytes();
+        string first = string.Format("{0:x2}", (int)addressbytes[0]);
+        string second = string.Format("{0:x2}", (int)addressbytes[1]);
+        string third = string.Format("{0:x2}", (int)addressbytes[2]);
+        string fourth = string.Format("{0:x2}", (int)addressbytes[3]);
+        return first+second+third+fourth;
+    }
+
+    private string server_entry_in_hex() {
         if (this.port == 0) {
             return null;
         }
-		string server_string = "";
-		server_string += this.ip_in_hex();
-		server_string += this.port_in_hex();
-		return server_string;
-	}
-	
-	public bool Equals(ServerEntry vergleichswert) {
-		string selbst_hex_wert = this.ToString();
-		string vergleichs_hex_wert = vergleichswert.ToString();
-		return vergleichs_hex_wert.Equals(selbst_hex_wert);
-	}
+        string server_string = "";
+        server_string += this.ip_in_hex();
+        server_string += this.port_in_hex();
+        return server_string;
+    }
 
-	public override string ToString() {
+    public bool Equals(ServerEntry vergleichswert) {
+        string selbst_hex_wert = this.ToString();
+        string vergleichs_hex_wert = vergleichswert.ToString();
+        return vergleichs_hex_wert.Equals(selbst_hex_wert);
+    }
+
+    public override string ToString() {
         if (this.port == 0) {
             return "";
         }
-		return this.server_entry_in_hex();
-	}
-	
-	public Thread QueryInfoThreaded() {
-		Thread thread = new Thread(new ThreadStart(this.QueryInfo));
-		thread.Start();
+        return this.server_entry_in_hex();
+    }
+
+    public Thread QueryInfoThreaded() {
+        Thread thread = new Thread(new ThreadStart(this.QueryInfo));
+        thread.Start();
         return thread;
-	}
-	
+    }
+
     public Dictionary <string,string> GetData() {
         return this.query_values;
     }
-    
+
     public string GetIpRepresentation () {
         string ip_address = this.address.ToString();
         return ip_address+":"+port;
     }
 
-	public void QueryInfo() {
+    public void QueryInfo() {
         //Der ganze Block sollte so umgeschrieben werden, dass für die Queries nur noch die zurückgegebenen Datenblöcke mit den eigentlichen Wertepaaren ausgewertet werden müssen.
         //Was noch fehlt, ist die Detail-Abfrage, die nicht nur die Standard-Infos abholt
-		Masterserver.DebugMessage("Querying status from server "+this+"...");
+        Masterserver.DebugMessage("Querying status from server "+this+"...");
         if (this.port == 0) {
             Masterserver.DebugMessage("Server hasn't been initalized.");
             return;
         }
 
-		IPAddress destination_ip = this.address;
-		int destination_port = (int)this.port;
+        IPAddress destination_ip = this.address;
+        int destination_port = (int)this.port;
         byte[] server_status_query_head = QueryStrings.GetArray("server_status_query_head");
         byte[] server_response_head = QueryStrings.GetArray("server_status_answer_head");
 
@@ -149,7 +149,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
 
         Byte[] start = receivedBytes.Take(Encoding.ASCII.GetString(server_response_head).Length).ToArray();
         Byte[] ende  = receivedBytes.Skip(Encoding.ASCII.GetString(server_response_head).Length+1).ToArray();
-        
+
         Masterserver.DebugMessage("Received data from "+this.ToString()+".");
         if (start.SequenceEqual(server_response_head)) {
             Masterserver.DebugMessage("Found an expected header from "+this.ToString()+".");
@@ -205,19 +205,19 @@ public class ServerEntry : IEquatable<ServerEntry>{
         }
 
     }
-    
+
     public void QueryDetails() {
-		Masterserver.DebugMessage("Querying details from server "+this+"...");
+        Masterserver.DebugMessage("Querying details from server "+this+"...");
         if (this.protocol == 0) {
             Masterserver.DebugMessage("This server has not been initalized, yet.");
             return;
         }
 
-		IPAddress destination_ip = this.address;
-		int destination_port = (int)this.port;
+        IPAddress destination_ip = this.address;
+        int destination_port = (int)this.port;
         byte[] server_details_query_head = QueryStrings.GetArray("server_details_query_head");
         byte[] server_details_answer_head = QueryStrings.GetArray("server_details_answer_head");
-        
+
         byte[] receivedBytes = NetworkBasics.GetAnswer(destination_ip, destination_port, server_details_query_head);
         if (receivedBytes == null) {
             Masterserver.DebugMessage("Didn't receive any data from "+this.ToString()+".");
@@ -238,7 +238,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
                 Masterserver.DebugMessage("Nix bekommen");
                 return;
             }
-            
+
             this.query_values = Parser.ConcatDictonaries(this.query_values, detail_values);
             return;
         } else {
@@ -246,9 +246,9 @@ public class ServerEntry : IEquatable<ServerEntry>{
             this.protocol = 0;
             return;
         }
-        
+
     }
-    
+
     public List<Player> GetPlayers() {
         return this.playerList;
     }
