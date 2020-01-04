@@ -97,13 +97,15 @@ public static class ServerList {
         byte[] full = QueryStrings.GetArray("full");
         byte[] eot = QueryStrings.GetArray("eot");
         byte[] space = {32};
+        byte[] version0 = {48};
         byte[] version22 = {50, 50};
         byte[] version23 = {50, 51};
         byte[] version24 = {50, 52};
+        byte[] server_list_request00 = QueryStrings.ConcatByteArray(new byte[][] {server_list_query_head, version0,  space, full, space, empty}); //Only useful with this master server version also on the other side: Gives /all/ known servers back from the other master server
         byte[] server_list_request22 = QueryStrings.ConcatByteArray(new byte[][] {server_list_query_head, version22, space, full, space, empty});
         byte[] server_list_request23 = QueryStrings.ConcatByteArray(new byte[][] {server_list_query_head, version23, space, full, space, empty});
         byte[] server_list_request24 = QueryStrings.ConcatByteArray(new byte[][] {server_list_query_head, version24, space, full, space, empty});
-        byte[][] server_list_requests = {server_list_request22, server_list_request23, server_list_request24};
+        byte[][] server_list_requests = {server_list_request00, server_list_request22, server_list_request23, server_list_request24};
         byte[] server_list_answer_head = QueryStrings.GetArray("server_list_response_head");
 
         foreach (byte[] server_list_request in server_list_requests) {
@@ -177,6 +179,10 @@ public static class ServerList {
                         ServerList.AddServer(newcomer);
                     }
                 }
+                if (server_list_request00 == server_list_request && returnData  != "") { //This works only if the other side sends all servers know (incl. other versions) when version number is zero. In such cases other queries are not required.
+					Masterserver.DebugMessage("Got data and are in first round -> no further queries!");
+					return;
+				}
             } else {
             if (Masterserver.GetDebug()) {
                 Console.WriteLine("start:");
@@ -198,6 +204,7 @@ public static class ServerList {
                 }
             }
         }
+		Masterserver.DebugMessage("End of query loop.");
     }
 
     public static void QueryOtherMasters(string[] masterServerArray) {
@@ -231,6 +238,7 @@ public static class ServerList {
                 }
             }
         }
+        Console.WriteLine("Finished querying");
     }
 
     public static void QueryOtherMastersThreaded(string[] masterServerArray, int interval) {

@@ -34,7 +34,7 @@ class HeartbeatListener {
 					string rest = Encoding.ASCII.GetString(receivedbytes.Skip(server_list_query_head.Length).ToArray()).ToLower();
 					bool want_full = false;
 					bool want_empty = false;
-					int protocol = 0;
+					int protocol = -1;
 					if (-1 != rest.IndexOf("full")) {want_full = true;}
 					if (-1 != rest.IndexOf("empty")) {want_empty = true;}
 					string[] parameter_list = rest.Split(new [] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -42,9 +42,10 @@ class HeartbeatListener {
 					List<ServerEntry> original = ServerList.get_list();
 					List<ServerEntry> filtered = new List<ServerEntry>();
 					foreach (ServerEntry original_entry in original) {
-						if (   original_entry.GetProtocol() == protocol
-						    && !(original_entry.IsEmpty() && !want_empty)
-						    && !(original_entry.IsFull() && !want_full)) {
+						if (   (   original_entry.GetProtocol() == protocol
+						        && !(original_entry.IsEmpty() && !want_empty)
+						        && !(original_entry.IsFull() && !want_full))
+						    || protocol == 0) {
 							filtered.Add(original_entry);
 						}
 					}
