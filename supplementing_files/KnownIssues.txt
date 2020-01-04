@@ -5,7 +5,6 @@ Master-Query sollte in regelmäßigen Intervallen stattfinden. Ggf. Quelle im se
     Gedanke um alle auf einmal zu kriegen:
 	    AddServerListFromMaster aufbohren, um auch version00 zu senden. Sollte er da was kriegen, braucht er gar nicht mehr durch die anderen gehen. Sonst einzeln abklappern.
 	    HeartbeatListener.StartListener so umbauen, dass es bei Version 00 alle raus haut, egal ob voll oder leer, egal welche Version.
-    Server-Listen-Abholung in eigenen Thread auslagern, der gestartet wird, sobald das Programm startet.			 
 Offene Ideen:
 Server Entries aus File lesen und in File speichern, dessen Name über die Konsole übergeben wird. Methoden dazu:
     string text = File.ReadAllText(@"c:\file.txt", Encoding.UTF8);
