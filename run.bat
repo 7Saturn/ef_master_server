@@ -1,4 +1,5 @@
 echo off
 cls
-masterserver.exe --copy-from master.stef1.daggolin.de,master.stvef.org,efmaster.tjps.eu --debug --verbose
+rem masterserver.exe --copy-from master.stef1.daggolin.de --debug
+masterserver.exe --copy-from efmaster.tjps.eu --debug
 pause

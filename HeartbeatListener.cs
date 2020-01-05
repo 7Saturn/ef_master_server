@@ -10,7 +10,6 @@ class HeartbeatListener {
     {
         UdpClient listener = new UdpClient((int)listenPort);
         IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, listenPort);
-        if (Masterserver.GetVerbose()) {Console.WriteLine("Starting EF master server ver. {0}...", Masterserver.VersionString);}
         try
         {
             while (true)
@@ -24,12 +23,9 @@ class HeartbeatListener {
 					ServerEntry new_one = new ServerEntry(address, port);
 					ServerList.AddServer(new_one);
 					new_one.QueryInfo();
-					Masterserver.DebugMessage("Cleaning up...");
-					ServerList.Cleanup();
 					Masterserver.DebugMessage("New ones protocol: "+ new_one.GetProtocol());
 				} else if (IsListRequest(receivedbytes)) {
                     Masterserver.DebugMessage("---- Received server query request from " + groupEP + " ----");
-					ServerList.Cleanup();
 					byte[] server_list_query_head = QueryStrings.GetArray("server_list_query_head");
 					string rest = Encoding.ASCII.GetString(receivedbytes.Skip(server_list_query_head.Length).ToArray()).ToLower();
 					bool want_full = false;

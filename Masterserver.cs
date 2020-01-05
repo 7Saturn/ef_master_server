@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 //requires mono-mcs for compiling under Debian/Ubuntu
 
 public class Masterserver {
-    public const string VersionString = "0.1";
+    public const string VersionString = "0.2";
     private static bool debug = false;
     private static bool verbose = false;
     private static ushort master_port = 27953;
@@ -64,9 +64,14 @@ public class Masterserver {
             ShowHelp();
             Environment.Exit(0);
         }
+        if (   args.Contains("--debug")
+            || args.Contains("--verbose")) {
+			Console.WriteLine("Starting EF master server ver. {0}...", Masterserver.VersionString);
+        }
         if (args.Contains("--debug")) {
             Console.WriteLine("--debug: OK, you want it all...");
             debug = true;
+            verbose = true;
         }
         if (args.Contains("--verbose")) {
             Console.WriteLine("--verbose: I'll be a little less quiet...");
@@ -185,6 +190,7 @@ public class Masterserver {
         Console.WriteLine("--verbose:           Shows a little more information on what is currently going");
         Console.WriteLine("                     on.");
         Console.WriteLine("--debug:             Shows debug messages on what is currently going on.");
+        Console.WriteLine("                     Sets --verbose switch active, too.");
         Console.WriteLine();
         Console.WriteLine("--help:              Prints this help and exits.", OwnFileName);
     }
