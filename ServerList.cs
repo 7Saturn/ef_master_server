@@ -38,6 +38,10 @@ public static class ServerList {
 
     public static void AddServer(ServerEntry new_one) {
         Masterserver.DebugMessage("Trying to add "+new_one.ToString());
+        if (new_one.ToString().Equals("")) {
+            Masterserver.DebugMessage("Empty server provided for AddServer, skipping this one...");
+            return;
+        }
         if (!ServerList.get_list().Contains(new_one)) {
             Masterserver.DebugMessage("A new one arrived, querying data...");
             //Stopwatch stopwatch = new Stopwatch();
@@ -169,8 +173,10 @@ public static class ServerList {
                 Masterserver.DebugMessage("The following servers were returned:");
                 foreach (string adresse in adressen)
                 {
-                    ServerEntry newcomer = new ServerEntry(adresse);
-                    ServerList.AddServer(newcomer);
+                    if (!adresse.Equals("")) {
+                        ServerEntry newcomer = new ServerEntry(adresse);
+                        ServerList.AddServer(newcomer);
+                    }
                 }
             }
         } else {
