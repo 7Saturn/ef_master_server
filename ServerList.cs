@@ -155,29 +155,37 @@ public static class ServerList {
         Byte[]  tail = receiveBytes.Skip(receiveBytes.Length-eot.Length).ToArray();
         Byte[]  data = receiveBytes.Skip(server_list_answer_head.Length+1).ToArray();
         data = data.Take(data.Length-eot.Length).ToArray();
+        while (data.Length > 0 && data[0] == 0) {//Stripping leading zeros
+            data = data.Skip(1).ToArray();
+        }
 
         if (start.SequenceEqual(server_list_answer_head) && tail.SequenceEqual(eot)) {
             Masterserver.DebugMessage("Answer is valid.");
 
             string returnData = Encoding.ASCII.GetString(data);
             Masterserver.DebugMessage("Data-String: '" + returnData + "'");
-            string[] adressen = returnData.Split('\\');
-            if (Masterserver.GetDebug()) {
-                foreach (string adresse in adressen) {
-                    Masterserver.DebugMessage(adresse + " was received");
-                }
-            }
-            if (ende.SequenceEqual(eot)) {
-                Masterserver.DebugMessage("But no servers were sent back.");
-            } else {
-                Masterserver.DebugMessage("The following servers were returned:");
-                foreach (string adresse in adressen)
-                {
-                    if (!adresse.Equals("")) {
-                        ServerEntry newcomer = new ServerEntry(adresse);
-                        ServerList.AddServer(newcomer);
+            if (returnData.Length > 0) {
+                string[] adressen = returnData.Split('\\');
+                if (Masterserver.GetDebug()) {
+                    foreach (string adresse in adressen) {
+                        Masterserver.DebugMessage(adresse + " was received");
                     }
                 }
+                if (ende.SequenceEqual(eot)) {
+                    Masterserver.DebugMessage("But no servers were sent back.");
+                } else {
+                    Masterserver.DebugMessage("The following servers were returned:");
+                    foreach (string adresse in adressen)
+                    {
+                        if (!adresse.Equals("")) {
+                            ServerEntry newcomer = new ServerEntry(adresse);
+                            ServerList.AddServer(newcomer);
+                        }
+                    }
+                }
+            }
+            else {
+                Masterserver.DebugMessage("But apparently the master knows no game servers of that version.");
             }
         } else {
             if (Masterserver.GetDebug()) {

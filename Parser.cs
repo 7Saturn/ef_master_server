@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using System.Collections.Generic;
 public static class Parser {
 	public static int HexToDec(string hexValue)
@@ -84,5 +85,9 @@ public static class Parser {
         foreach (byte zeichen in receiveBytes) {
             Console.WriteLine("{0} {1}",(int)zeichen,(char)zeichen);
         }
+    }
+
+    public static void DumpString(string inputstring) {
+        DumpBytes(Encoding.ASCII.GetBytes(inputstring));
     }
 }

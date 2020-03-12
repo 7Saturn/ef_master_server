@@ -32,7 +32,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
     }
 
     public ServerEntry(string ip_port):base() {
-        Masterserver.DebugMessage("ServerEntry("+ip_port+")");
+        Masterserver.DebugMessage("Entering ServerEntry("+ip_port+")");
         string ip_port_pattern = "[\\d,A-F,a-f]{12}";
         Regex checker = new Regex (ip_port_pattern);
         if (checker.IsMatch(ip_port)) {
@@ -48,7 +48,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
         else {
             Masterserver.DebugMessage("Warning: No valid address string provided!");
         }
-        Masterserver.DebugMessage("/ServerEntry(string)");
+        Masterserver.DebugMessage("Leaving ServerEntry("+ip_port+")");
     }
 
     public bool IsFull() {
