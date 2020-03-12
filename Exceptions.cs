@@ -5,7 +5,7 @@ public class StringNameInvalidException : System.Exception
     public StringNameInvalidException(string message, System.Exception inner) : base(message, inner) { }
 
     protected StringNameInvalidException(System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+                                         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }
 
 public class CannotOpenUDPPortException : System.Exception
@@ -15,5 +15,5 @@ public class CannotOpenUDPPortException : System.Exception
     public CannotOpenUDPPortException(string message, System.Exception inner) : base(message, inner) { }
 
     protected CannotOpenUDPPortException(System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+                                         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }

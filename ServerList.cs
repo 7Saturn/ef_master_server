@@ -30,7 +30,6 @@ public static class ServerList {
             }
         }
         return text_list;
-
     }
 
     public static string get_text_list() {
@@ -45,7 +44,7 @@ public static class ServerList {
             //stopwatch.Start();
             new_one.QueryInfo();
             //stopwatch.Stop();
-            //Masterserver.DebugMessage("Time elapsed: "+stopwatch.ElapsedMilliseconds+"ms.");
+            //Masterserver.DebugMessage("Time elapsed: "+stopwatch.ElapsedMilliseconds+" ms.");
             //stopwatch.Reset();
             ServerList.get_list().Add(new_one);
             Masterserver.DebugMessage("Now list looks like this: "+ServerList.get_text_list());
@@ -99,119 +98,101 @@ public static class ServerList {
         byte[] server_list_query_head = QueryStrings.GetArray("server_list_query_head");
         byte[] empty = QueryStrings.GetArray("empty");
         byte[] full = QueryStrings.GetArray("full");
-        byte[] eot = QueryStrings.GetArray("eot");
         byte[] space = {32};
-        byte[] version0 = {48};
         byte[] version22 = {50, 50};
         byte[] version23 = {50, 51};
         byte[] version24 = {50, 52};
-        byte[] server_list_request00 = QueryStrings.ConcatByteArray(new byte[][] {server_list_query_head, version0,  space, full, space, empty}); //Only useful with this master server version also on the other side: Gives /all/ known servers back from the other master server
         byte[] server_list_request22 = QueryStrings.ConcatByteArray(new byte[][] {server_list_query_head, version22, space, full, space, empty});
         byte[] server_list_request23 = QueryStrings.ConcatByteArray(new byte[][] {server_list_query_head, version23, space, full, space, empty});
         byte[] server_list_request24 = QueryStrings.ConcatByteArray(new byte[][] {server_list_query_head, version24, space, full, space, empty});
-        //server_list_request00 = server_list_request24;
-        byte[][] server_list_requests = {server_list_request00, server_list_request22, server_list_request23, server_list_request24};
-        byte[] server_list_answer_head = QueryStrings.GetArray("server_list_response_head");
+        byte[][] server_list_requests = {server_list_request22, server_list_request23, server_list_request24};
+        byte[] get_all_servers_query = QueryStrings.GetArray("server_list_all_query_head");
 
-        foreach (byte[] server_list_request in server_list_requests) {
-            Masterserver.DebugMessage("Working on " + master_host + ":" + master_port + ", sending version string " + Encoding.ASCII.GetString(server_list_request));
-            IPAddress address;
-            try {
-                address = IPAddress.Parse(master_host);
-            }
-            catch (Exception e) {
-                Masterserver.DebugMessage(e.ToString());
-                Masterserver.DebugMessage(master_host+" is not a valid IP address. Trying to resolve it, assuming it is a host name...");
-                try {
-                    IPAddress[] ipaddresses = Dns.GetHostAddresses(master_host);
-                    List<IPAddress> temp_ipaddresses = new List<IPAddress>();
-                    foreach (IPAddress ipaddress in ipaddresses) {
-                        if (ipaddress.AddressFamily.ToString() == ProtocolFamily.InterNetwork.ToString()) {
-                            temp_ipaddresses.Add(ipaddress);
-                        }
-                    }
-                    ipaddresses = temp_ipaddresses.ToArray();
-                    if (ipaddresses.Length > 0) {
-                        address = ipaddresses[0];
-                    } else {
-                        Masterserver.DebugMessage("Could not resolve "+master_host+" to a valid IP address.");
-                        break;
-                    }
-                    Masterserver.DebugMessage("Resolved "+master_host+" to "+address.ToString()+".");
-                }
-                catch (Exception e2) {
-                    Masterserver.DebugMessage(e2.ToString());
-                    Masterserver.DebugMessage("Could not resolve "+master_host+" to a valid IP address.");
+        //First attempt with special dump-all-request server_list_all_query_head
+        IPAddress address = NetworkBasics.resolve_host(master_host);
+        if (address == null) {
+            Console.WriteLine("Hostname {0} could not be resolved, skipping it.", master_host);
+            return;
+        }
+        Masterserver.DebugMessage("Working on " + master_host + ":" + master_port + ", sending dump all string " + Encoding.ASCII.GetString(get_all_servers_query));
+        byte[] receiveBytes = NetworkBasics.GetAnswer(address, ((int)master_port), get_all_servers_query);
+
+        if (receiveBytes == null) {//This is normal, when the master server is not supporting the dump all request (which is usually the case)
+            Masterserver.DebugMessage("Received nothing. The server probably does not support the dump all request. Trying it normally with protocols 22 to 24...");
+            foreach (byte[] server_list_request in server_list_requests) {
+                Masterserver.DebugMessage("Working on " + master_host + ":" + master_port + ", sending version string " + Encoding.ASCII.GetString(server_list_request));
+                receiveBytes = NetworkBasics.GetAnswer(address, ((int)master_port), server_list_request);
+                if (receiveBytes == null) {
+                    Masterserver.DebugMessage("Received nothing.");
                     break;
                 }
+                else {
+                    ProcessReceivedListString(receiveBytes);
+                }
             }
-            byte[] receiveBytes = NetworkBasics.GetAnswer(address, ((int)master_port), server_list_request);
-            if (receiveBytes == null) {
-                Masterserver.DebugMessage("Received nothing.");
-                if (server_list_request != server_list_request00) {
-					break;
-				}
-            } else {
-				Masterserver.DebugMessage("Received the following:\n"+Encoding.ASCII.GetString(receiveBytes));
-				if (receiveBytes.Length < server_list_answer_head.Length) {//+eot.Length
-					Masterserver.DebugMessage("Result is too short.");
-					break;
-				}
-				Byte[] start = receiveBytes.Take(server_list_answer_head.Length).ToArray();
-				Byte[]  ende = receiveBytes.Skip(server_list_answer_head.Length+1).ToArray();
-				Byte[]  tail = receiveBytes.Skip(receiveBytes.Length-eot.Length).ToArray();
-				Byte[]  data = receiveBytes.Skip(server_list_answer_head.Length+1).ToArray();
-				data = data.Take(data.Length-eot.Length).ToArray();
-
-
-				if (start.SequenceEqual(server_list_answer_head) && tail.SequenceEqual(eot)) {
-					Masterserver.DebugMessage("Answer is valid.");
-
-					string returnData = Encoding.ASCII.GetString(data);
-					Masterserver.DebugMessage("Data-String: '" + returnData + "'");
-					string[] adressen = returnData.Split('\\');
-					if (Masterserver.GetDebug()) {
-						foreach (string adresse in adressen) {
-							Masterserver.DebugMessage(adresse + "was received");
-						}
-					}
-					if (ende.SequenceEqual(eot)) {
-						Masterserver.DebugMessage("But no servers were sent back.");
-					} else {
-						Masterserver.DebugMessage("The following servers were returned:");
-						foreach (string adresse in adressen)
-						{
-							ServerEntry newcomer = new ServerEntry(adresse);
-							ServerList.AddServer(newcomer);
-						}
-					}
-					if (server_list_request00 == server_list_request && returnData  != "") { //This works only if the other side sends all servers know (incl. other versions) when version number is zero. In such cases other queries are not required.
-						Masterserver.DebugMessage("Got data and are in first round -> no further queries!");
-						return;
-					}
-				} else {
-				if (Masterserver.GetDebug()) {
-					Console.WriteLine("start:");
-					Parser.DumpBytes(start);
-					Console.WriteLine("server_list_answer_head:");
-					Parser.DumpBytes(server_list_answer_head);
-					Console.WriteLine("ende:");
-					Parser.DumpBytes(ende);
-					Console.WriteLine("tail:");
-					Parser.DumpBytes(tail);
-					Console.WriteLine("eot:");
-					Parser.DumpBytes(eot);
-					Console.WriteLine("data:");
-					Parser.DumpBytes(data);
-				}
-					Masterserver.DebugMessage("Got jibberish here:");
-					if (Masterserver.GetDebug()) {
-						Parser.DumpBytes(receiveBytes);
-					}
-				}
-			}
+            Masterserver.DebugMessage("End of query loop.");
+        } else { //This works only if the other side knows the dump all request, which is a specialty of this master server you are currently viewing the code of.
+            ProcessReceivedListString(receiveBytes);
+            Masterserver.DebugMessage("Got data and are in first round -> no further queries!");
+            return;
         }
-		Masterserver.DebugMessage("End of query loop.");
+    }
+
+    private static void ProcessReceivedListString (byte[] receiveBytes) {
+        byte[] server_list_answer_head = QueryStrings.GetArray("server_list_response_head");
+        byte[] eot = QueryStrings.GetArray("eot");
+        Masterserver.DebugMessage("Received the following:\n"+Encoding.ASCII.GetString(receiveBytes));
+        if (receiveBytes.Length < server_list_answer_head.Length) {//+eot.Length
+            Masterserver.DebugMessage("Result is too short.");
+            return;
+        }
+        Byte[] start = receiveBytes.Take(server_list_answer_head.Length).ToArray();
+        Byte[]  ende = receiveBytes.Skip(server_list_answer_head.Length+1).ToArray();
+        Byte[]  tail = receiveBytes.Skip(receiveBytes.Length-eot.Length).ToArray();
+        Byte[]  data = receiveBytes.Skip(server_list_answer_head.Length+1).ToArray();
+        data = data.Take(data.Length-eot.Length).ToArray();
+
+        if (start.SequenceEqual(server_list_answer_head) && tail.SequenceEqual(eot)) {
+            Masterserver.DebugMessage("Answer is valid.");
+
+            string returnData = Encoding.ASCII.GetString(data);
+            Masterserver.DebugMessage("Data-String: '" + returnData + "'");
+            string[] adressen = returnData.Split('\\');
+            if (Masterserver.GetDebug()) {
+                foreach (string adresse in adressen) {
+                    Masterserver.DebugMessage(adresse + "was received");
+                }
+            }
+            if (ende.SequenceEqual(eot)) {
+                Masterserver.DebugMessage("But no servers were sent back.");
+            } else {
+                Masterserver.DebugMessage("The following servers were returned:");
+                foreach (string adresse in adressen)
+                {
+                    ServerEntry newcomer = new ServerEntry(adresse);
+                    ServerList.AddServer(newcomer);
+                }
+            }
+        } else {
+            if (Masterserver.GetDebug()) {
+                Console.WriteLine("start:");
+                Parser.DumpBytes(start);
+                Console.WriteLine("server_list_answer_head:");
+                Parser.DumpBytes(server_list_answer_head);
+                Console.WriteLine("ende:");
+                Parser.DumpBytes(ende);
+                Console.WriteLine("tail:");
+                Parser.DumpBytes(tail);
+                Console.WriteLine("eot:");
+                Parser.DumpBytes(eot);
+                Console.WriteLine("data:");
+                Parser.DumpBytes(data);
+            }
+            Masterserver.DebugMessage("Got jibberish here:");
+            if (Masterserver.GetDebug()) {
+                Parser.DumpBytes(receiveBytes);
+            }
+        }
     }
 
     public static void QueryOtherMasters(string[] masterServerArray) {
@@ -240,16 +221,16 @@ public static class ServerList {
                     }
                 }
                 if (master_host != null && master_port != 0) {
-					if (Masterserver.GetVerbose()) {
-						Console.WriteLine("Querying master server '{0}'", masterServer);
-					}
+                    if (Masterserver.GetVerbose()) {
+                        Console.WriteLine("Querying master server '{0}'", masterServer);
+                    }
                     ServerList.AddServerListFromMaster(master_host, master_port);
                 }
             }
         }
         if (Masterserver.GetVerbose()) {
-			Console.WriteLine("Finished querying");
-		}
+            Console.WriteLine("Finished querying");
+        }
     }
 
     public static void QueryOtherMastersThreaded(string[] masterServerArray, int interval) {
@@ -269,13 +250,13 @@ public static class ServerList {
         Masterserver.DebugMessage("Starting cleanup thread.");
         Thread thread = new Thread(() => ServerList.CleanupThread());
         thread.Start();
-		return thread;
+        return thread;
     }
 
     private static void CleanupThread() {
         while (true) {
-            ServerList.Cleanup();
             System.Threading.Thread.Sleep(600000); //Once every ten minutes should suffice
+            ServerList.Cleanup();
         }
     }
 }

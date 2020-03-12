@@ -44,7 +44,8 @@ public class ServerEntry : IEquatable<ServerEntry>{
             ushort port = (ushort) Parser.HexToDec(ip_port.Substring(8,4));
             this.port = port;
             this.address = IPAddress.Parse(ip);
-        } else {
+        }
+        else {
             Masterserver.DebugMessage("Warning: No valid address string provided!");
         }
         Masterserver.DebugMessage("/ServerEntry(string)");
@@ -183,10 +184,12 @@ public class ServerEntry : IEquatable<ServerEntry>{
             if (!query_values.TryGetValue("sv_maxclients", out sv_maxclients)) {
                 this.full = false;
                 this.empty = false;
-            } else if (!query_values.TryGetValue("clients", out clients)) {
+            }
+            else if (!query_values.TryGetValue("clients", out clients)) {
                 this.full = false;
                 this.empty = false;
-            } else {
+            }
+            else {
                 int clients_n = int.Parse(clients);
                 int sv_maxclients_n = int.Parse(clients);
                 if (clients_n == 0) {
@@ -198,7 +201,8 @@ public class ServerEntry : IEquatable<ServerEntry>{
             }
             this.query_values = Parser.ConcatDictonaries(this.query_values,temp_query_values);
             return;
-        } else {
+        }
+        else {
             Masterserver.DebugMessage("Unrecognized response '"+Encoding.ASCII.GetString(receivedBytes)+"' from "+this.ToString());
             this.protocol = 0;
             return;
@@ -241,7 +245,8 @@ public class ServerEntry : IEquatable<ServerEntry>{
 
             this.query_values = Parser.ConcatDictonaries(this.query_values, detail_values);
             return;
-        } else {
+        }
+        else {
             Masterserver.DebugMessage("Unrecognized response '"+Encoding.ASCII.GetString(receivedBytes)+"' from "+this.ToString());
             this.protocol = 0;
             return;

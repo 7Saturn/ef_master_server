@@ -7,14 +7,15 @@ public static class QueryStrings {
 
 
     /*
-     Festgestellte Probleme:
-     * server_list_response_head kann auch ohne Space am ende, oder aber mit 0x00ern separiert sein. --> suche nach erstem \?
-    */
+      Festgestellte Probleme:
+      * server_list_response_head kann auch ohne Space am ende, oder aber mit 0x00ern separiert sein. --> suche nach erstem \?
+      */
 
     private static void CreateMapping() {
         mapping = new Dictionary<string,byte[]>();
         byte[] yyyy = new byte[4] {255,255,255,255};
         byte[] getservers = new byte[10] {103, 101, 116, 115, 101, 114, 118, 101, 114, 115};
+        byte[] getallservers = new byte[13] {103, 101, 116, 97, 108, 108, 115, 101, 114, 118, 101, 114, 115};
         byte[] space = new byte[1] {32};
         byte[] empty = new byte[5] {101, 109, 112, 116, 121};
         byte[] full = new byte[4] {102, 117, 108, 108};
@@ -32,16 +33,18 @@ public static class QueryStrings {
         byte[] server_status_answer_head = ConcatByteArray(new byte[][] {yyyy, inforesponse});
         byte[] server_details_answer_head = ConcatByteArray(new byte[][] {yyyy, statusResponse, new byte[] {10}});
         byte[] server_list_query_head = ConcatByteArray(new byte[][] {yyyy, getservers, space});
+        byte[] server_list_all_query_head = ConcatByteArray(new byte[][] {yyyy, getallservers, space});
         byte[] server_list_response_head = ConcatByteArray(new byte[][] {yyyy, getserversResponse});
         byte[] server_list_response_head_space = ConcatByteArray(new byte[][] {yyyy, getserversResponse, space});
         byte[] heartbeat_signal_head = ConcatByteArray(new byte[][] {yyyy, heartbeat});
         byte[] heartbeat_signal_tail = ConcatByteArray(new byte[][] {gamename});
-        
+
         mapping.Add("server_status_query_head", server_status_query_head);
         mapping.Add("server_status_answer_head", server_status_answer_head);
         mapping.Add("server_details_query_head", server_details_query_head);
         mapping.Add("server_details_answer_head", server_details_answer_head);
         mapping.Add("server_list_query_head", server_list_query_head);
+        mapping.Add("server_list_all_query_head", server_list_all_query_head);
         mapping.Add("server_list_response_head", server_list_response_head);
         mapping.Add("server_list_response_head_space", server_list_response_head_space);
         mapping.Add("heartbeat_signal_head", heartbeat_signal_head);
@@ -57,13 +60,14 @@ public static class QueryStrings {
 		}
         return mapping;
 	}
-    
+
 	public static byte[] GetArray(string name) {
 		Dictionary<string,byte[]> mapping = QueryStrings.GetMapping();
 		byte[] return_string = null;
         if (!mapping.TryGetValue(name, out return_string)) {
 			throw new StringNameInvalidException("There is no server query with name '"+name+"'.");
-		} else {
+		}
+        else {
 			return return_string;
 		}
 	}
@@ -81,5 +85,4 @@ public static class QueryStrings {
 		}
 		return temp_liste.ToArray();
 	}
-} 
-
+}

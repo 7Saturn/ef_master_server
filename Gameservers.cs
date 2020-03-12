@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 using System.Collections.Generic;
-using System.IO; 
+using System.IO;
 using System.Linq;
 using System.Diagnostics;
 
@@ -11,11 +11,11 @@ public class Masterserver {
 	private static bool verbose = false;
 	private static ushort master_port = 27953;
 	private static string OwnFileName = Path.GetFileName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-    
+
 	public static bool GetDebug() {
 		return debug;
 	}
-	
+
 	public static bool GetVerbose() {
 		return verbose;
 	}
@@ -65,7 +65,7 @@ public class Masterserver {
 			master_port = (ushort)port;
 		}
 	}
-	
+
 	public static void ShowHelp() {
 		Console.WriteLine("EF Masterserver Version {0}", GetVersionString());
 		Console.WriteLine();
@@ -80,7 +80,7 @@ public class Masterserver {
 		Console.WriteLine();
 		Console.WriteLine("{0} --help: Prints this help.", OwnFileName);
 	}
-	
+
 	public static int Main(string[] args) {
         ParseArgs(args);
         ServerList.AddServerListFromMaster("master.stvef.org", 27953);
@@ -102,9 +102,8 @@ public class Masterserver {
         }
         return 0;
 	}
-	
+
     public static void DebugMessage (string debugmessage) {
         if (GetDebug()) {Console.WriteLine(" debug: {0}", debugmessage);}
     }
 }
-

@@ -77,7 +77,8 @@ public class Masterserver {
             Console.WriteLine("--verbose: I'll be a little less quiet...");
             verbose = true;
         }
-        if (!(onePartParameters.Contains(args[0]) || twoPartParameters.Contains(args[0]))) {
+        if (!(   onePartParameters.Contains(args[0])
+              || twoPartParameters.Contains(args[0]))) {
             Masterserver.DebugMessage("First parameter is unknown.");
             Masterserver.FaultyParameterNotification(args[0]);
             ShowHelp();
@@ -114,8 +115,8 @@ public class Masterserver {
             master_port = (ushort)port;
         }
         if (!args.Contains("--copy-from") && args.Contains("--interval")) {
-                Console.WriteLine("--interval switch requires --copy-from switch.");
-                Environment.Exit(2);
+            Console.WriteLine("--interval switch requires --copy-from switch.");
+            Environment.Exit(2);
         }
         if (args.Contains("--copy-from")) {
             DebugMessage("--copy-from switch found");
@@ -165,7 +166,8 @@ public class Masterserver {
                     ServerList.QueryOtherMastersThreaded(masterServerArray, interval);
                 }
                 //Environment.Exit(0);
-            } else {
+            }
+            else {
                 DebugMessage("Found no master servers provided!");
             }
         }
@@ -205,4 +207,3 @@ public class Masterserver {
         if (GetDebug()) {Console.WriteLine(" debug: {0}", debugmessage);}
     }
 }
-

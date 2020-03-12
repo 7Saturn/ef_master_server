@@ -17,7 +17,7 @@ public static class Parser {
             return null;
         }
         List<string>.Enumerator parameter_enumerator = parameter_liste.GetEnumerator();
-        while (parameter_enumerator.MoveNext()) { 
+        while (parameter_enumerator.MoveNext()) {
             string key = parameter_enumerator.Current;
             parameter_enumerator.MoveNext();
             string wert = parameter_enumerator.Current;
@@ -71,7 +71,7 @@ public static class Parser {
         }
         return third;
     }
-    
+
     public static void DumpDictionary(Dictionary <string,string> hash) {
         foreach (KeyValuePair<string, string> item in hash)
         {
@@ -79,11 +79,10 @@ public static class Parser {
         }
 
     }
-    
+
     public static void DumpBytes(byte[] receiveBytes) {
         foreach (byte zeichen in receiveBytes) {
             Console.WriteLine("{0} {1}",(int)zeichen,(char)zeichen);
         }
-
     }
 }
