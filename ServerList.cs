@@ -160,7 +160,7 @@ public static class ServerList {
             string[] adressen = returnData.Split('\\');
             if (Masterserver.GetDebug()) {
                 foreach (string adresse in adressen) {
-                    Masterserver.DebugMessage(adresse + "was received");
+                    Masterserver.DebugMessage(adresse + " was received");
                 }
             }
             if (ende.SequenceEqual(eot)) {
