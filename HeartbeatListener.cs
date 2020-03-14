@@ -26,7 +26,7 @@ class HeartbeatListener {
                     Masterserver.DebugMessage("New ones protocol: " + new_one.GetProtocol());
                 }
                 else if (IsListRequest(receivedbytes)) {
-                    Masterserver.DebugMessage("---- Received server query request from " + groupEP + " ----");
+                    if (Masterserver.GetVerbose()) {Console.WriteLine("---- Received server query request from " + groupEP + " ----");}
                     ServerList.Cleanup();
                     byte[] server_list_query_head = QueryStrings.GetArray("server_list_query_head");
                     string rest = Encoding.ASCII.GetString(receivedbytes.Skip(server_list_query_head.Length).ToArray()).ToLower();
