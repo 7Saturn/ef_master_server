@@ -66,12 +66,11 @@ public static class NetworkBasics {
 					return null;
 				}
 			}
+			udpClient.Close();
 			if (receiveBytes == null) {
 				Masterserver.DebugMessage("Nothing ever came from " + destination_ip + ":" + destination_port + ".");
-				udpClient.Close();
 				return null;
 			}
-			udpClient.Close();
             while (   receiveBytes.Length > 0
                    && receiveBytes[receiveBytes.Length-1] == 0) {
                 Masterserver.DebugMessage("Trimming tailing zero byte.");

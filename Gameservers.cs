@@ -87,7 +87,6 @@ public class Masterserver {
         ServerList.AddServerListFromMaster("efmaster.tjps.eu", 27953);
         ServerList.AddServerListFromMaster("master.stef1.daggolin.de", 27953);
         List<ServerEntry> current_servers = ServerList.get_list();
-
         foreach (ServerEntry current_entry in current_servers) {
             if (!current_entry.ToString().Equals("")) {
                 current_entry.QueryDetails();
@@ -99,6 +98,7 @@ public class Masterserver {
                 System.Console.WriteLine("{0}: {1} ({2})", version, hostname, current_entry.GetIpRepresentation());
             }
         }
+        ServerList.StopCleanupThread();
         return 0;
 	}
 

@@ -277,6 +277,11 @@ public static class ServerList {
         return thread;
     }
 
+    public static void StopCleanupThread() {
+        Masterserver.DebugMessage("Stopping cleanup thread.");
+        CleanupThreadHandle.Abort();
+    }
+
     private static void CleanupThread() {
         while (true) {
             System.Threading.Thread.Sleep(600000); //Sleep first. Do NOT(!) do it the other way around. If you do this to fast, it might crash on slow or heavily loaded machines, as the list may not exist at first. Once every ten minutes should suffice.
