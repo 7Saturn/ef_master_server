@@ -14,7 +14,7 @@ public static class NetworkBasics {
 				udpClient = new UdpClient(start_port);
 			}
 			catch (SocketException e) {
-				if (e.ErrorCode == 10048) {
+				if (e.ErrorCode == 10048) {//Port is already in use
 					start_port++;
 				} else {
 					throw new CannotOpenUDPPortException();
@@ -39,15 +39,15 @@ public static class NetworkBasics {
         }
 		try{
 			udpClient.Connect(destination_ip, destination_port);
-			Masterserver.DebugMessage("Got Connect to "+destination_ip+":"+destination_port);
+			Masterserver.DebugMessage("Got connected to " + destination_ip + ":" + destination_port);
 			Masterserver.DebugMessage("Sending...");
             udpClient.Send(sendBytes, sendBytes.Length);
 
-			Masterserver.DebugMessage("Waiting for response from "+destination_ip+":"+destination_port+" for "+NetworkBasics.timeoutms+"ms...");
+			Masterserver.DebugMessage("Waiting for response from " + destination_ip + ":" + destination_port + " for " + NetworkBasics.timeoutms + "ms...");
             IPEndPoint RemoteIpEndPoint = new IPEndPoint(destination_ip, destination_port);
             Masterserver.DebugMessage("Endpoint active...");
             // Won't block the entire program when receiving nothing, but requires a reasonable timeout value
-			var asyncResult = udpClient.BeginReceive( null, null );
+			var asyncResult = udpClient.BeginReceive(null, null);
             Masterserver.DebugMessage("Beginning receiving.");
 			asyncResult.AsyncWaitHandle.WaitOne(NetworkBasics.timeoutms);
             Masterserver.DebugMessage("Handle active...");
@@ -67,14 +67,15 @@ public static class NetworkBasics {
 				}
 			}
 			if (receiveBytes == null) {
-				Masterserver.DebugMessage("Nothing ever came from "+destination_ip+":"+destination_port+".");
+				Masterserver.DebugMessage("Nothing ever came from " + destination_ip + ":" + destination_port + ".");
 				udpClient.Close();
 				return null;
 			}
 			udpClient.Close();
-            while (receiveBytes.Length > 0 && receiveBytes[receiveBytes.Length-1] == 0) {
+            while (   receiveBytes.Length > 0
+                   && receiveBytes[receiveBytes.Length-1] == 0) {
                 Masterserver.DebugMessage("Trimming tailing zero byte.");
-                Array.Resize(ref receiveBytes,receiveBytes.Length -1);
+                Array.Resize(ref receiveBytes, receiveBytes.Length - 1);
             }
             return receiveBytes;
         }
@@ -95,7 +96,7 @@ public static class NetworkBasics {
         }
         catch (Exception e) {
             Masterserver.DebugMessage(e.ToString());
-            Masterserver.DebugMessage(master_host+" is not a valid IP address. Trying to resolve it, assuming it is a host name...");
+            Masterserver.DebugMessage(master_host + " is not a valid IP address. Trying to resolve it, assuming it is a host name...");
             try {
                 IPAddress[] ipaddresses = Dns.GetHostAddresses(master_host);
                 List<IPAddress> temp_ipaddresses = new List<IPAddress>();
@@ -108,15 +109,15 @@ public static class NetworkBasics {
                 if (ipaddresses.Length > 0) {
                     address = ipaddresses[0];
                 } else {
-                    Masterserver.DebugMessage("Could not resolve "+master_host+" to a valid IP address.");
+                    Masterserver.DebugMessage("Could not resolve " + master_host + " to a valid IP address.");
                     return null;
                 }
-                Masterserver.DebugMessage("Resolved "+master_host+" to "+address.ToString()+".");
+                Masterserver.DebugMessage("Resolved " + master_host + " to '" + address.ToString() + "'.");
                 return address;
             }
             catch (Exception e2) {
                 Masterserver.DebugMessage(e2.ToString());
-                Masterserver.DebugMessage("Could not resolve "+master_host+" to a valid IP address.");
+                Masterserver.DebugMessage("Could not resolve " + master_host + " to a valid IP address.");
                 return null;
             }
         }

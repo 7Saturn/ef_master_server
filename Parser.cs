@@ -10,14 +10,15 @@ public static class Parser {
 
     public static Dictionary <string,string> SplitStringToParameters (string data) {
         Dictionary <string,string> query_values = new Dictionary <string,string>();
-        List<string> parameter_liste = data.Split(new [] { '\\' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-        if (parameter_liste.Count == 0) {
+        List<string> parameter_list = data.Split(new [] { '\\' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+        if (parameter_list.Count == 0) {
             return null;
         }
-        if (parameter_liste.Count() % 2 == 1) {
+        if (parameter_list.Count() % 2 == 1) {
+            Masterserver.DebugMessage("Warning: Got an uneven number of parameters from string '" + data + "', something is wrong here.");
             return null;
         }
-        List<string>.Enumerator parameter_enumerator = parameter_liste.GetEnumerator();
+        List<string>.Enumerator parameter_enumerator = parameter_list.GetEnumerator();
         while (parameter_enumerator.MoveNext()) {
             string key = parameter_enumerator.Current;
             parameter_enumerator.MoveNext();
@@ -57,7 +58,8 @@ public static class Parser {
         return playerlist;
     }
 
-    public static Dictionary <string,string> ConcatDictonaries(Dictionary <string,string> first, Dictionary <string,string> second)
+    public static Dictionary <string,string> ConcatDictionaries(Dictionary <string,string> first,
+                                                                Dictionary <string,string> second)
     {
         Dictionary <string,string> third = new Dictionary <string,string>();
         foreach (KeyValuePair<string, string> item in first)
@@ -87,7 +89,7 @@ public static class Parser {
         }
     }
 
-    public static void DumpString(string inputstring) {
+    public static void DumpStringAsBytes(string inputstring) {
         DumpBytes(Encoding.ASCII.GetBytes(inputstring));
     }
 }

@@ -89,7 +89,7 @@ public class Masterserver {
                 && !(twoPartParameters.Contains(parameter))
                 && !(twoPartParameters.Contains(args[(Array.IndexOf(args,parameter))-1])))
             {
-                Masterserver.DebugMessage("Parameter '"+ parameter +"' is unknown.");
+                Masterserver.DebugMessage("Parameter '" + parameter + "' is unknown.");
                 Masterserver.FaultyParameterNotification(parameter);
                 ShowHelp();
                 Environment.Exit(2);
@@ -103,8 +103,8 @@ public class Masterserver {
                 Environment.Exit(2);
             }
             int port;
-            if (!Int32.TryParse(args[portswitchposition+1], out port)) {
-                Console.WriteLine("The provided --port value '"+args[portswitchposition]+"' cannot be recognized. Missing value?");
+            if (!Int32.TryParse(args[portswitchposition + 1], out port)) {
+                Console.WriteLine("The provided --port value '" + args[portswitchposition] + "' cannot be recognized. Missing value?");
                 Environment.Exit(2);
             }
             if (port > 65535 || port < 0) {
@@ -125,7 +125,7 @@ public class Masterserver {
                 Console.WriteLine("--copy-from switch requires a comma separated list of servers or IPs, that should be used for querying of other master servers.");
                 Environment.Exit(2);
             }
-            string masterServerString = args[Array.IndexOf(args, "--copy-from")+1];
+            string masterServerString = args[Array.IndexOf(args, "--copy-from") + 1];
             if (onePartParameters.Contains(masterServerString) || twoPartParameters.Contains(masterServerString)) {
                 Console.WriteLine("--copy-from switch contains no valid master server hosts.");
                 Environment.Exit(2);
@@ -181,20 +181,22 @@ public class Masterserver {
         Console.WriteLine("{0} [--port <portnumber>] [--copy-from <serverlist> [--interval <number>]] [--verbose] [--debug]", getStartCommand());
         Console.WriteLine();
         Console.WriteLine("Switches:");
-        Console.WriteLine("--port <portnumber>: Sets the listening port to the value provided, default is");
-        Console.WriteLine("                     27953.");
         Console.WriteLine("--copy-from <list>   Queries other master servers for their data. Requires a");
         Console.WriteLine("                     comma separated list of master server names or IPs.");
         Console.WriteLine("--interval <number>  Defines, how long the time interval between master server");
         Console.WriteLine("                     queries to other servers is in seconds. May not be less");
         Console.WriteLine("                     than 60 (= 1 minute). Requires switch --copy-from.");
         Console.WriteLine("                     Default is off (no repeated querying).");
+        Console.WriteLine("--port <portnumber>: Sets the listening port to the value provided, default is");
+        Console.WriteLine("                     27953. Not recommended for standard EF servers, as they");
+        Console.WriteLine("                     cannot connect to another port than the standard port.");
+        Console.WriteLine("                     Only ioQuake3 derivatives can do so.");
         Console.WriteLine("--verbose:           Shows a little more information on what is currently going");
         Console.WriteLine("                     on.");
         Console.WriteLine("--debug:             Shows debug messages on what is currently going on.");
         Console.WriteLine("                     Sets --verbose switch active, too.");
         Console.WriteLine();
-        Console.WriteLine("--help:              Prints this help and exits.", OwnFileName);
+        Console.WriteLine("--help:              Prints this help and exits.");
     }
 
     public static int Main(string[] args) {

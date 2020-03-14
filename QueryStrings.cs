@@ -5,12 +5,6 @@ public static class QueryStrings {
 
 	private static Dictionary<string,byte[]> mapping = null;
 
-
-    /*
-      Festgestellte Probleme:
-      * server_list_response_head kann auch ohne Space am ende, oder aber mit 0x00ern separiert sein. --> suche nach erstem \?
-      */
-
     private static void CreateMapping() {
         mapping = new Dictionary<string,byte[]>();
         byte[] yyyy = new byte[4] {255,255,255,255};
@@ -65,7 +59,7 @@ public static class QueryStrings {
 		Dictionary<string,byte[]> mapping = QueryStrings.GetMapping();
 		byte[] return_string = null;
         if (!mapping.TryGetValue(name, out return_string)) {
-			throw new StringNameInvalidException("There is no server query with name '"+name+"'.");
+			throw new StringNameInvalidException("There is no server query with name '" + name + "'.");
 		}
         else {
 			return return_string;
@@ -79,10 +73,10 @@ public static class QueryStrings {
     }
 
 	public static byte[] ConcatByteArray (byte[][] arraylist) {
-		List<byte> temp_liste = new List<byte>();
+		List<byte> temp_list = new List<byte>();
 		foreach (byte[] block in arraylist) {
-			temp_liste.AddRange(block);
+			temp_list.AddRange(block);
 		}
-		return temp_liste.ToArray();
+		return temp_list.ToArray();
 	}
 }

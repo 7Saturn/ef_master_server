@@ -22,6 +22,6 @@ public class Player {
     }
 
     public override string ToString() {
-        return this.nick+": "+frags;
+        return this.nick + ": " + frags;
     }
 }

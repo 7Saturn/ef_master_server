@@ -53,8 +53,8 @@ public class Masterserver {
 				Environment.Exit(2);
 			}
 			int port;
-			if (!Int32.TryParse(args[portswitchposition+1], out port)) {
-				Console.WriteLine("The provided --port value '"+args[portswitchposition]+"' cannot be recognized. Missing value?");
+			if (!Int32.TryParse(args[portswitchposition + 1], out port)) {
+				Console.WriteLine("The provided --port value '" + args[portswitchposition] + "' cannot be recognized. Missing value?");
 				Environment.Exit(2);
 			}
 			if (port > 65535 || port < 0) {
@@ -86,7 +86,6 @@ public class Masterserver {
         ServerList.AddServerListFromMaster("master.stvef.org", 27953);
         ServerList.AddServerListFromMaster("efmaster.tjps.eu", 27953);
         ServerList.AddServerListFromMaster("master.stef1.daggolin.de", 27953);
-        ServerList.AddServerListFromMaster("192.168.0.2", 27953);
         List<ServerEntry> current_servers = ServerList.get_list();
 
         foreach (ServerEntry current_entry in current_servers) {

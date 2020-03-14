@@ -23,7 +23,7 @@ class HeartbeatListener {
                     ServerEntry new_one = new ServerEntry(address, port);
                     ServerList.AddServer(new_one);
                     new_one.QueryInfo();
-                    Masterserver.DebugMessage("New ones protocol: "+ new_one.GetProtocol());
+                    Masterserver.DebugMessage("New ones protocol: " + new_one.GetProtocol());
                 }
                 else if (IsListRequest(receivedbytes)) {
                     Masterserver.DebugMessage("---- Received server query request from " + groupEP + " ----");
@@ -41,9 +41,11 @@ class HeartbeatListener {
                     List<ServerEntry> filtered = new List<ServerEntry>();
                     foreach (ServerEntry original_entry in original) {
                         if (   original_entry.GetProtocol() == protocol
-                               && !(original_entry.IsEmpty() && !want_empty)
-                               && !(original_entry.IsFull() && !want_full)) {
-                            filtered.Add(original_entry);
+                            && !(   original_entry.IsEmpty()
+                                 && !want_empty)
+                            && !(   original_entry.IsFull()
+                                 && !want_full)) {
+                            filtered.Add(original_entry); //yes, the filtering takes place at the master server, not the requesting game client. Back then they really were trying to save bandwidth...
                         }
                     }
                     byte[] getserversResponse = QueryStrings.GetArray("server_list_response_head_space");
@@ -52,11 +54,11 @@ class HeartbeatListener {
                     byte[] query = null;
                     query = QueryStrings.ConcatByteArray(new byte[][] {getserversResponse, server_list, eot});
                     string sendstring = Encoding.ASCII.GetString(query, 0, query.Length);
-                    Masterserver.DebugMessage("Sending this: '"+sendstring+"'");
+                    Masterserver.DebugMessage("Sending this: '" + sendstring + "'");
                     listener.Send(query, query.Length, groupEP);
 
                 }
-                else if (IsDumpRequest(receivedbytes)) {
+                else if (IsDumpRequest(receivedbytes)) {//not standard issue. Original EF did never know/support this, but it makes querying other masters for the purpose of running am master yourself a lot easier/faster
                     Masterserver.DebugMessage("---- Received server dump query request from " + groupEP + " ----");
                     ServerList.Cleanup();
                     byte[] getserversResponse = QueryStrings.GetArray("server_list_response_head_space");
@@ -85,30 +87,30 @@ class HeartbeatListener {
             listener.Close();
         }
     }
-
+    //It is not enough to simply compare the Strings! e. g. the four 0x255 characters turn into question marks, which in turn would fit them, although they are not the same. So using byte arrays, that works properly.
     private static bool IsHeartbeatRequest(byte[] received, ushort port) {
-        Masterserver.DebugMessage("IsHeartbeatRequest\nreceived: '"+Encoding.ASCII.GetString(received)+"', port: "+port+"");
+        Masterserver.DebugMessage("IsHeartbeatRequest\nreceived: '" + Encoding.ASCII.GetString(received) + "', port: " + port);
 		if (received == null) {return false;}
 		byte[] heartbeat_signal = QueryStrings.GetHeartbeatComparison(port);
-        Masterserver.DebugMessage("comparison: "+Encoding.ASCII.GetString(heartbeat_signal));
+        Masterserver.DebugMessage("comparison: " + Encoding.ASCII.GetString(heartbeat_signal));
 		if (received.Length < heartbeat_signal.Length) {return false;}
 		return ByteArraysAreEqual(received, heartbeat_signal);
 	}
 
 	private static bool IsListRequest(byte[] received) {
-        Masterserver.DebugMessage("IsListRequest\nreceived: '"+Encoding.ASCII.GetString(received)+"'");
+        Masterserver.DebugMessage("IsListRequest\nreceived: '" + Encoding.ASCII.GetString(received) + "'");
 		if (received == null) {return false;}
 		byte[] server_list_query_head = QueryStrings.GetArray("server_list_query_head");
-        Masterserver.DebugMessage("comparison: "+Encoding.ASCII.GetString(server_list_query_head));
+        Masterserver.DebugMessage("comparison: " + Encoding.ASCII.GetString(server_list_query_head));
 		if (received.Length < server_list_query_head.Length) {return false;}
 		return ByteArraysAreEqual(received, server_list_query_head);
 	}
 
 	private static bool IsDumpRequest(byte[] received) {
-        Masterserver.DebugMessage("IsDumpRequest\nreceived: '"+Encoding.ASCII.GetString(received)+"'");
+        Masterserver.DebugMessage("IsDumpRequest\nreceived: '" + Encoding.ASCII.GetString(received) + "'");
 		if (received == null) {return false;}
 		byte[] server_list_all_query_head = QueryStrings.GetArray("server_list_all_query_head");
-        Masterserver.DebugMessage("comparison: "+Encoding.ASCII.GetString(server_list_all_query_head));
+        Masterserver.DebugMessage("comparison: " + Encoding.ASCII.GetString(server_list_all_query_head));
 		if (received.Length < server_list_all_query_head.Length) {return false;}
 		return ByteArraysAreEqual(received, server_list_all_query_head);
 	}
