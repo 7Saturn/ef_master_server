@@ -1,11 +1,10 @@
 ﻿Known problems:
 
-HeartbeatListener: Once a client makes a connection, it is kept until a timout is reached?
-server_list_response_head may lack spaces at its tail and may be separated by 0x00 look for first occurance of »\«?
+server_list_response_head may lack spaces at its tail and may be separated by 0x00 --> look for first occurance of »\«?
 QueryStrings.mapping may be redone as an enumeration
 IPv6 is not supported although ioQuake3 based EF binaries do support IPv6
-ServerEntry.QueryInfo(): //Der ganze Block sollte so umgeschrieben werden, dass für die Queries nur noch die zurückgegebenen Datenblöcke mit den eigentlichen Wertepaaren ausgewertet werden müssen.
-                         //Was noch fehlt, ist die Detail-Abfrage, die nicht nur die Standard-Infos abholt
+ServerEntry.QueryInfo(): //the entiry block should be rewritten so that queries only return the data blocks with key-value pairs.
+                         //Server details are currently not requested, but might be
 Open suggestions:
 Server Entries stored in file, if a file name is provided. Interesting methods:
     string text = File.ReadAllText(@"c:\file.txt", Encoding.UTF8);
