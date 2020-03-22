@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
@@ -9,6 +10,14 @@ public class Gui : Form
 
     public Gui(string version)
     {
+        string icon48path = "graphics/ef_logo_48.ico";
+        if (File.Exists(icon48path)) {
+            Icon cornerIcon = new Icon (icon48path);
+            this.Icon = cornerIcon;
+        }
+        else {
+            Printer.DebugMessage(icon48path + " is missing, but it should be delivered along with this program.");
+        }
         serverListTable = new ListView();
         serverListTable.Bounds = new Rectangle(new Point(10,10), new Size(549,353));
         this.Size = new Size(576,432);
