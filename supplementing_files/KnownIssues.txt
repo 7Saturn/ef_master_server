@@ -3,6 +3,12 @@
 server_list_response_head may lack spaces at its tail and may be separated by 0x00 --> look for first occurance of »\«?
 QueryStrings.mapping may be redone as an enumeration
 IPv6 is not supported although ioQuake3 based EF binaries do support IPv6
+    socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+    socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+    socket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1234));
+    var udpClient = new UdpClient();
+    udpClient.Client = socket;
+    ... (use udpClient)
 ServerEntry.QueryInfo(): //the entiry block should be rewritten so that queries only return the data blocks with key-value pairs.
                          //Server details are currently not requested, but might be
 Open suggestions:
