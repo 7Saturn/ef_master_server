@@ -178,7 +178,7 @@ public class Masterserver {
         Console.WriteLine();
         Console.WriteLine("Usage:");
         Console.WriteLine();
-        Console.WriteLine("{0} [--port <portnumber>] [--copy-from <serverlist> [--interval <number>]] [--verbose] [--debug]", getStartCommand());
+        Console.WriteLine("{0} [--port <portnumber>] [--copy-from <serverlist> [--interval <number>]] [--verbose] [--debug] [--withgui]", getStartCommand());
         Console.WriteLine();
         Console.WriteLine("Switches:");
         Console.WriteLine("--copy-from <list>   Queries other master servers for their data. Requires a");
@@ -191,6 +191,7 @@ public class Masterserver {
         Console.WriteLine("                     27953. Not recommended for standard EF servers, as they");
         Console.WriteLine("                     cannot connect to another port than the standard port.");
         Console.WriteLine("                     Only ioQuake3 derivatives can do so.");
+        Console.WriteLine("--withgui:           Shows the currently known servers in a graphical window.");
         Console.WriteLine("--verbose:           Shows a little more information on what is currently going");
         Console.WriteLine("                     on.");
         Console.WriteLine("--debug:             Shows debug messages on what is currently going on.");
@@ -203,7 +204,13 @@ public class Masterserver {
         ParseArgs(args);
         if (useGui) {
             HeartbeatListener.StartListenerThread(GetPort());
-            Application.Run (new Gui(VersionString));
+            try {
+                Application.Run (new Gui(VersionString));
+            }
+            catch (TypeInitializationException e) {
+                Console.WriteLine("I got a 'TypeInitializationException' here. Usually that means you tried to use the GUI feature without actually having an X-server started. I cannot do that.");
+                Environment.Exit(1);
+            }
             HeartbeatListener.StopListenerThread();
         }
         else {
