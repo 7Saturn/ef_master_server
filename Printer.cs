@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 public class Printer {
     private static bool debugActive = false;
+    private static bool verboseActive = false;
     public static void SetDebug(bool active) {
         debugActive = active;
     }
@@ -11,8 +12,20 @@ public class Printer {
         return debugActive;
     }
 
+    public static void SetVerbose(bool active) {
+        verboseActive = active;
+    }
+
+    public static bool GetVerbose() {
+        return verboseActive;
+    }
+
     public static void DebugMessage (string debugmessage) {
         if (debugActive) {Console.WriteLine(" debug: {0}", debugmessage);}
+    }
+
+    public static void VerboseMessage (string message) {
+        if (verboseActive) {Console.WriteLine(message);}
     }
 
     public static void DumpDictionary(Dictionary <string,string> hash) {

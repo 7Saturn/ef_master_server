@@ -12,7 +12,6 @@ using System.Windows.Forms;
 
 public class Masterserver {
     public const string VersionString = "0.3";
-    private static bool verbose = false;
     private static bool useGui = false;
     private static ushort master_port = 27953;
     private static string OwnFileName = Environment.GetCommandLineArgs()[0].Replace(Directory.GetCurrentDirectory(), ".");
@@ -27,10 +26,6 @@ public class Masterserver {
             Console.WriteLine("System: '{0}'", currentSystemType);
             return OwnFileName;
         }
-    }
-
-    public static bool GetVerbose() {
-        return verbose;
     }
 
     public static ushort GetPort() {
@@ -68,14 +63,14 @@ public class Masterserver {
         if (args.Contains("--withgui")) {
             useGui = true;
         }
+        if (args.Contains("--verbose")) {
+            Console.WriteLine("--verbose: I'll be a little less quiet...");
+            Printer.SetVerbose(true);
+        }
         if (args.Contains("--debug")) {
             Console.WriteLine("--debug: OK, you want it all...");
             Printer.SetDebug(true);
-            verbose = true;
-        }
-        if (args.Contains("--verbose")) {
-            Console.WriteLine("--verbose: I'll be a little less quiet...");
-            verbose = true;
+            Printer.SetVerbose(true);
         }
         if (!(   onePartParameters.Contains(args[0])
               || twoPartParameters.Contains(args[0]))) {
@@ -111,7 +106,7 @@ public class Masterserver {
                 Console.WriteLine("The provided --port value must be greater than 0 and less than 65536.");
                 Environment.Exit(2);
             }
-            if (Masterserver.GetVerbose()) {Console.WriteLine("--port: Using port {0} for incoming connections.", port);}
+            Printer.VerboseMessage("--port: Using port " + port + " for incoming connections.");
             master_port = (ushort)port;
         }
         if (!args.Contains("--copy-from") && args.Contains("--interval")) {

@@ -257,16 +257,12 @@ public static class ServerList {
                 }
                 if (   master_host != null
                     && master_port != 0) {
-                    if (Masterserver.GetVerbose()) {
-                        Console.WriteLine("Querying master server '{0}'", masterServer);
-                    }
+                    Printer.VerboseMessage("Querying master server '" + masterServer + "'");
                     ServerList.AddServerListFromMaster(master_host, master_port);
                 }
             }
         }
-        if (Masterserver.GetVerbose()) {
-            Console.WriteLine("Finished querying");
-        }
+        Printer.VerboseMessage("Finished querying");
     }
 
     public static void QueryOtherMastersThreaded(string[] masterServerArray, int interval) {

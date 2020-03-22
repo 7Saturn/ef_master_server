@@ -33,7 +33,7 @@ class HeartbeatListener {
                 byte[] receivedbytes = listener.Receive(ref groupEP);
                 ushort destination_port = (ushort)groupEP.Port;
                 if (IsHeartbeatRequest(receivedbytes, destination_port)) {
-                    if (Masterserver.GetVerbose()) {Console.WriteLine("---- Received heartbeat from {0} ----", groupEP);}
+                    Printer.VerboseMessage("---- Received heartbeat from " + groupEP + " ----");
                     IPAddress address = groupEP.Address;
                     ushort port = (ushort)groupEP.Port;
                     ServerEntry new_one = new ServerEntry(address, port);
@@ -42,7 +42,7 @@ class HeartbeatListener {
                     Printer.DebugMessage("New ones protocol: " + new_one.GetProtocol());
                 }
                 else if (IsListRequest(receivedbytes)) {
-                    if (Masterserver.GetVerbose()) {Console.WriteLine("---- Received server query request from " + groupEP + " ----");}
+                    Printer.VerboseMessage("---- Received server query request from " + groupEP + " ----");
                     ServerList.Cleanup();
                     byte[] server_list_query_head = QueryStrings.GetArray("server_list_query_head");
                     string rest = Encoding.ASCII.GetString(receivedbytes.Skip(server_list_query_head.Length).ToArray()).ToLower();
