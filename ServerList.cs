@@ -235,12 +235,24 @@ public static class ServerList {
                 }
                 else {
                     //IPv6...
-                    Match parts = Regex.Match(masterServer, "$(.*):(\\d)^");
+                    Masterserver.DebugMessage("IPv6 address found: " + masterServer);
+                    Match parts = Regex.Match(masterServer, @"^\[([0-9,a-f,A-F,:]*)\]");
                     if (parts.Success) {
+                        Console.WriteLine("Successor");
                         master_host = parts.Value;
-                        parts = parts.NextMatch();
-                        Int32.TryParse(parts.Value, out temp_port);
-                        master_port = (ushort)temp_port;
+                        Console.WriteLine("IPv6 address derived: " + master_host);
+                        MatchCollection blocks = Regex.Matches(masterServer, @"(\d{1,5})$");
+                        Console.WriteLine("blocks.Count: {0}", blocks.Count);
+                        if (blocks.Count > 0) {
+                            string port = blocks[0].Groups[0].ToString();
+                            Int32.TryParse(port, out temp_port);
+                            master_port = (ushort)temp_port;
+                            Console.WriteLine("port: '{0}'", port);
+                            Console.WriteLine("master_port: '{0}'", master_port);
+                        }
+                    }
+                    else {
+                        Console.WriteLine("no success");
                     }
                 }
                 if (   master_host != null
