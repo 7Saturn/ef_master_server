@@ -15,7 +15,7 @@ public static class Parser {
             return null;
         }
         if (parameter_list.Count() % 2 == 1) {
-            Masterserver.DebugMessage("Warning: Got an uneven number of parameters from string '" + data + "', something is wrong here.");
+            Printer.DebugMessage("Warning: Got an uneven number of parameters from string '" + data + "', something is wrong here.");
             return null;
         }
         List<string>.Enumerator parameter_enumerator = parameter_list.GetEnumerator();
@@ -75,21 +75,4 @@ public static class Parser {
         return third;
     }
 
-    public static void DumpDictionary(Dictionary <string,string> hash) {
-        foreach (KeyValuePair<string, string> item in hash)
-        {
-            Console.WriteLine("'{0}' => '{1}'", item.Key, item.Value);
-        }
-
-    }
-
-    public static void DumpBytes(byte[] receiveBytes) {
-        foreach (byte zeichen in receiveBytes) {
-            Console.WriteLine("{0} {1}",(int)zeichen,(char)zeichen);
-        }
-    }
-
-    public static void DumpStringAsBytes(string inputstring) {
-        DumpBytes(Encoding.ASCII.GetBytes(inputstring));
-    }
 }

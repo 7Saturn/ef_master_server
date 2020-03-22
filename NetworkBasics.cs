@@ -39,41 +39,41 @@ public static class NetworkBasics {
         }
 		try{
 			udpClient.Connect(destination_ip, destination_port);
-			Masterserver.DebugMessage("Got connected to " + destination_ip + ":" + destination_port);
-			Masterserver.DebugMessage("Sending...");
+			Printer.DebugMessage("Got connected to " + destination_ip + ":" + destination_port);
+			Printer.DebugMessage("Sending...");
             udpClient.Send(sendBytes, sendBytes.Length);
 
-			Masterserver.DebugMessage("Waiting for response from " + destination_ip + ":" + destination_port + " for " + NetworkBasics.timeoutms + "ms...");
+			Printer.DebugMessage("Waiting for response from " + destination_ip + ":" + destination_port + " for " + NetworkBasics.timeoutms + "ms...");
             IPEndPoint RemoteIpEndPoint = new IPEndPoint(destination_ip, destination_port);
-            Masterserver.DebugMessage("Endpoint active...");
+            Printer.DebugMessage("Endpoint active...");
             // Won't block the entire program when receiving nothing, but requires a reasonable timeout value
 			var asyncResult = udpClient.BeginReceive(null, null);
-            Masterserver.DebugMessage("Beginning receiving.");
+            Printer.DebugMessage("Beginning receiving.");
 			asyncResult.AsyncWaitHandle.WaitOne(NetworkBasics.timeoutms);
-            Masterserver.DebugMessage("Handle active...");
+            Printer.DebugMessage("Handle active...");
 			byte[] receiveBytes = null;
 			if (asyncResult.IsCompleted)
 			{
 				try
 				{
 					receiveBytes = udpClient.EndReceive(asyncResult, ref RemoteIpEndPoint);
-                    Masterserver.DebugMessage("Received!");
+                    Printer.DebugMessage("Received!");
 				}
 				catch (Exception ex)
 				{
-                    Masterserver.DebugMessage("catching " + ex.Message + " for " + destination_ip + ":" + destination_port);
+                    Printer.DebugMessage("catching " + ex.Message + " for " + destination_ip + ":" + destination_port);
 					udpClient.Close();
 					return null;
 				}
 			}
 			udpClient.Close();
 			if (receiveBytes == null) {
-				Masterserver.DebugMessage("Nothing ever came from " + destination_ip + ":" + destination_port + ".");
+				Printer.DebugMessage("Nothing ever came from " + destination_ip + ":" + destination_port + ".");
 				return null;
 			}
             while (   receiveBytes.Length > 0
                    && receiveBytes[receiveBytes.Length-1] == 0) {
-                Masterserver.DebugMessage("Trimming tailing zero byte.");
+                Printer.DebugMessage("Trimming tailing zero byte.");
                 Array.Resize(ref receiveBytes, receiveBytes.Length - 1);
             }
             return receiveBytes;
@@ -86,16 +86,16 @@ public static class NetworkBasics {
     }
 
     public static IPAddress resolve_host(string master_host) {
-        Masterserver.DebugMessage("resolve_host('" + master_host + "')");
+        Printer.DebugMessage("resolve_host('" + master_host + "')");
         IPAddress address;
         try {
             address = IPAddress.Parse(master_host);
-            Masterserver.DebugMessage("'" + master_host + "' is already an IP address, no resolution required.");
+            Printer.DebugMessage("'" + master_host + "' is already an IP address, no resolution required.");
             return address;
         }
         catch (Exception e) {
-            Masterserver.DebugMessage(e.ToString());
-            Masterserver.DebugMessage(master_host + " is not a valid IP address. Trying to resolve it, assuming it is a host name...");
+            Printer.DebugMessage(e.ToString());
+            Printer.DebugMessage(master_host + " is not a valid IP address. Trying to resolve it, assuming it is a host name...");
             try {
                 IPAddress[] ipaddresses = Dns.GetHostAddresses(master_host);
                 List<IPAddress> temp_ipaddresses = new List<IPAddress>();
@@ -108,15 +108,15 @@ public static class NetworkBasics {
                 if (ipaddresses.Length > 0) {
                     address = ipaddresses[0];
                 } else {
-                    Masterserver.DebugMessage("Could not resolve " + master_host + " to a valid IP address.");
+                    Printer.DebugMessage("Could not resolve " + master_host + " to a valid IP address.");
                     return null;
                 }
-                Masterserver.DebugMessage("Resolved " + master_host + " to '" + address.ToString() + "'.");
+                Printer.DebugMessage("Resolved " + master_host + " to '" + address.ToString() + "'.");
                 return address;
             }
             catch (Exception e2) {
-                Masterserver.DebugMessage(e2.ToString());
-                Masterserver.DebugMessage("Could not resolve " + master_host + " to a valid IP address.");
+                Printer.DebugMessage(e2.ToString());
+                Printer.DebugMessage("Could not resolve " + master_host + " to a valid IP address.");
                 return null;
             }
         }

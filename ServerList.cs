@@ -37,28 +37,28 @@ public static class ServerList {
     }
 
     public static void AddServer(ServerEntry new_one) {
-        Masterserver.DebugMessage("Trying to add " + new_one.ToString());
+        Printer.DebugMessage("Trying to add " + new_one.ToString());
         if (new_one.ToString().Equals("")) {
-            Masterserver.DebugMessage("Empty server provided for AddServer, skipping this one...");
+            Printer.DebugMessage("Empty server provided for AddServer, skipping this one...");
             return;
         }
         if (!ServerList.get_list().Contains(new_one)) {
-            Masterserver.DebugMessage("A new one arrived, querying data...");
+            Printer.DebugMessage("A new one arrived, querying data...");
             //Stopwatch stopwatch = new Stopwatch();
             //stopwatch.Start();
             new_one.QueryInfo();
             //stopwatch.Stop();
-            //Masterserver.DebugMessage("Time elapsed: " + stopwatch.ElapsedMilliseconds + " ms.");
+            //Printer.DebugMessage("Time elapsed: " + stopwatch.ElapsedMilliseconds + " ms.");
             //stopwatch.Reset();
             ServerList.get_list().Add(new_one);
-            Masterserver.DebugMessage("Now list looks like this: " + ServerList.get_text_list());
+            Printer.DebugMessage("Now list looks like this: " + ServerList.get_text_list());
         }
         else {
-            Masterserver.DebugMessage("A known one");
+            Printer.DebugMessage("A known one");
             ServerEntry old_one = ServerList.get_list().Find(x => x.Equals(new_one));
-            Masterserver.DebugMessage("Old protocol: " + old_one.GetProtocol());
-            Masterserver.DebugMessage("New protocol: " + new_one.GetProtocol());
-            Masterserver.DebugMessage("So got to query that one again...");
+            Printer.DebugMessage("Old protocol: " + old_one.GetProtocol());
+            Printer.DebugMessage("New protocol: " + new_one.GetProtocol());
+            Printer.DebugMessage("So got to query that one again...");
             old_one.QueryInfo();
         }
     }
@@ -70,7 +70,7 @@ public static class ServerList {
     }
 
     public static void Cleanup() {
-        Masterserver.DebugMessage("Cleaning up server list...");
+        Printer.DebugMessage("Cleaning up server list...");
         List<Thread> threadlist = new List<Thread>();
         foreach (ServerEntry serverentry in ServerList.get_list()) {
             Thread thisthread = serverentry.QueryInfoThreaded();
@@ -96,7 +96,7 @@ public static class ServerList {
                 ServerList.RemoveServer(looptemp[counter]);
             }
         }
-        Masterserver.DebugMessage("Now list looks like this: " + ServerList.get_text_list());
+        Printer.DebugMessage("Now list looks like this: " + ServerList.get_text_list());
     }
 
     public static void AddServerListFromMaster(string master_host, ushort master_port) {
@@ -108,11 +108,11 @@ public static class ServerList {
             Console.WriteLine("Hostname {0} could not be resolved, skipping it.", master_host);
             return;
         }
-        Masterserver.DebugMessage("Working on " + master_host + ":" + master_port + ", sending dump all string " + Encoding.ASCII.GetString(get_all_servers_query));
+        Printer.DebugMessage("Working on " + master_host + ":" + master_port + ", sending dump all string " + Encoding.ASCII.GetString(get_all_servers_query));
         byte[] receiveBytes = NetworkBasics.GetAnswer(address, ((int)master_port), get_all_servers_query);
 
         if (receiveBytes == null) {//This is normal, when the master server is not supporting the dump all request (which is usually the case with other master servers)
-            Masterserver.DebugMessage("Received nothing. The server probably does not support the dump all request. Trying it normally with protocols 22 to 24...");
+            Printer.DebugMessage("Received nothing. The server probably does not support the dump all request. Trying it normally with protocols 22 to 24...");
             byte[] server_list_query_head = QueryStrings.GetArray("server_list_query_head");
             byte[] empty = QueryStrings.GetArray("empty");
             byte[] full = QueryStrings.GetArray("full");
@@ -127,20 +127,20 @@ public static class ServerList {
                                              server_list_request23,
                                              server_list_request24};
             foreach (byte[] server_list_request in server_list_requests) {
-                Masterserver.DebugMessage("Working on " + master_host + ":" + master_port + ", sending version string " + Encoding.ASCII.GetString(server_list_request));
+                Printer.DebugMessage("Working on " + master_host + ":" + master_port + ", sending version string " + Encoding.ASCII.GetString(server_list_request));
                 receiveBytes = NetworkBasics.GetAnswer(address, ((int)master_port), server_list_request);
                 if (receiveBytes == null) {
-                    Masterserver.DebugMessage("Received nothing.");
+                    Printer.DebugMessage("Received nothing.");
                     break;
                 }
                 else {
                     ProcessReceivedListByteArray(receiveBytes);
                 }
             }
-            Masterserver.DebugMessage("End of query loop.");
+            Printer.DebugMessage("End of query loop.");
         }
         else { //This works only if the other side knows the dump all request, which is a specialty of this master server you are currently viewing the code of.
-            Masterserver.DebugMessage("Got data via dump all request -> no further queries as we got all we can get");
+            Printer.DebugMessage("Got data via dump all request -> no further queries as we got all we can get");
             ProcessReceivedListByteArray(receiveBytes);
             return;
         }
@@ -149,9 +149,9 @@ public static class ServerList {
     private static void ProcessReceivedListByteArray (byte[] receiveBytes) {
         byte[] server_list_answer_head = QueryStrings.GetArray("server_list_response_head");
         byte[] eot = QueryStrings.GetArray("eot");
-        Masterserver.DebugMessage("Received the following:\n" + Encoding.ASCII.GetString(receiveBytes));
+        Printer.DebugMessage("Received the following:\n" + Encoding.ASCII.GetString(receiveBytes));
         if (receiveBytes.Length < server_list_answer_head.Length) {//+eot.Length
-            Masterserver.DebugMessage("Result is too short.");
+            Printer.DebugMessage("Result is too short.");
             return;
         }
         Byte[] start = receiveBytes.Take(server_list_answer_head.Length).ToArray();
@@ -165,22 +165,22 @@ public static class ServerList {
 
         if (   start.SequenceEqual(server_list_answer_head)
             && tail.SequenceEqual(eot)) {
-            Masterserver.DebugMessage("Answer is valid.");
+            Printer.DebugMessage("Answer is valid.");
 
             string returnData = Encoding.ASCII.GetString(data);
-            Masterserver.DebugMessage("Data-String: '" + returnData + "'");
+            Printer.DebugMessage("Data-String: '" + returnData + "'");
             if (returnData.Length > 0) {
                 string[] addresses = returnData.Split('\\');
-                if (Masterserver.GetDebug()) {
+                if (Printer.GetDebug()) {
                     foreach (string adresse in addresses) {
-                        Masterserver.DebugMessage(adresse + " was received");
+                        Printer.DebugMessage(adresse + " was received");
                     }
                 }
                 if (ende.SequenceEqual(eot)) {
-                    Masterserver.DebugMessage("But no servers were sent back.");
+                    Printer.DebugMessage("But no servers were sent back.");
                 }
                 else {
-                    Masterserver.DebugMessage("The following servers were returned:");
+                    Printer.DebugMessage("The following servers were returned:");
                     foreach (string address in addresses)
                     {
                         if (!address.Equals("")) {
@@ -191,35 +191,35 @@ public static class ServerList {
                 }
             }
             else {
-                Masterserver.DebugMessage("But apparently the master knows no game servers of that version.");
+                Printer.DebugMessage("But apparently the master knows no game servers of that version.");
             }
         }
         else {
-            if (Masterserver.GetDebug()) {
+            if (Printer.GetDebug()) {
                 Console.WriteLine("start:");
-                Parser.DumpBytes(start);
+                Printer.DumpBytes(start);
                 Console.WriteLine("server_list_answer_head:");
-                Parser.DumpBytes(server_list_answer_head);
+                Printer.DumpBytes(server_list_answer_head);
                 Console.WriteLine("ende:");
-                Parser.DumpBytes(ende);
+                Printer.DumpBytes(ende);
                 Console.WriteLine("tail:");
-                Parser.DumpBytes(tail);
+                Printer.DumpBytes(tail);
                 Console.WriteLine("eot:");
-                Parser.DumpBytes(eot);
+                Printer.DumpBytes(eot);
                 Console.WriteLine("data:");
-                Parser.DumpBytes(data);
+                Printer.DumpBytes(data);
             }
-            Masterserver.DebugMessage("Got jibberish here:");
-            if (Masterserver.GetDebug()) {
-                Parser.DumpBytes(receiveBytes);
+            Printer.DebugMessage("Got jibberish here:");
+            if (Printer.GetDebug()) {
+                Printer.DumpBytes(receiveBytes);
             }
         }
     }
 
     public static void QueryOtherMasters(string[] masterServerArray) {
-        Masterserver.DebugMessage("Querying provided master servers...");
+        Printer.DebugMessage("Querying provided master servers...");
         foreach (string masterServer in masterServerArray) {
-            Masterserver.DebugMessage("Working on master server '" + masterServer + "'...");
+            Printer.DebugMessage("Working on master server '" + masterServer + "'...");
             ushort master_port = 27953;
             string master_host = null;
             if (!masterServer.Equals("")) {
@@ -235,7 +235,7 @@ public static class ServerList {
                 }
                 else {
                     //IPv6...
-                    Masterserver.DebugMessage("IPv6 address found: " + masterServer);
+                    Printer.DebugMessage("IPv6 address found: " + masterServer);
                     Match parts = Regex.Match(masterServer, @"^\[([0-9,a-f,A-F,:]*)\]");
                     if (parts.Success) {
                         Console.WriteLine("Successor");
@@ -270,7 +270,7 @@ public static class ServerList {
     }
 
     public static void QueryOtherMastersThreaded(string[] masterServerArray, int interval) {
-        Masterserver.DebugMessage("Querying provided master servers in intervals of " + interval + "s.");
+        Printer.DebugMessage("Querying provided master servers in intervals of " + interval + "s.");
         Thread thread = new Thread(() => ServerList.StartQueryOtherMastersThread(masterServerArray, interval));
         thread.Start();
     }
@@ -283,14 +283,14 @@ public static class ServerList {
     }
 
     public static Thread StartCleanupThread() {
-        Masterserver.DebugMessage("Starting cleanup thread.");
+        Printer.DebugMessage("Starting cleanup thread.");
         Thread thread = new Thread(() => ServerList.CleanupThread());
         thread.Start();
         return thread;
     }
 
     public static void StopCleanupThread() {
-        Masterserver.DebugMessage("Stopping cleanup thread.");
+        Printer.DebugMessage("Stopping cleanup thread.");
         CleanupThreadHandle.Abort();
     }
 

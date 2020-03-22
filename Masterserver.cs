@@ -12,7 +12,6 @@ using System.Windows.Forms;
 
 public class Masterserver {
     public const string VersionString = "0.3";
-    private static bool debug = false;
     private static bool verbose = false;
     private static bool useGui = false;
     private static ushort master_port = 27953;
@@ -28,10 +27,6 @@ public class Masterserver {
             Console.WriteLine("System: '{0}'", currentSystemType);
             return OwnFileName;
         }
-    }
-
-    public static bool GetDebug() {
-        return debug;
     }
 
     public static bool GetVerbose() {
@@ -62,7 +57,7 @@ public class Masterserver {
             return;
         }
         if (args.Contains("--help")) {
-            Masterserver.DebugMessage("--help found");
+            Printer.DebugMessage("--help found");
             ShowHelp();
             Environment.Exit(0);
         }
@@ -75,7 +70,7 @@ public class Masterserver {
         }
         if (args.Contains("--debug")) {
             Console.WriteLine("--debug: OK, you want it all...");
-            debug = true;
+            Printer.SetDebug(true);
             verbose = true;
         }
         if (args.Contains("--verbose")) {
@@ -84,7 +79,7 @@ public class Masterserver {
         }
         if (!(   onePartParameters.Contains(args[0])
               || twoPartParameters.Contains(args[0]))) {
-            Masterserver.DebugMessage("First parameter is unknown.");
+            Printer.DebugMessage("First parameter is unknown.");
             Masterserver.FaultyParameterNotification(args[0]);
             ShowHelp();
             Environment.Exit(2);
@@ -94,14 +89,14 @@ public class Masterserver {
                 && !(twoPartParameters.Contains(parameter))
                 && !(twoPartParameters.Contains(args[(Array.IndexOf(args,parameter))-1])))
             {
-                Masterserver.DebugMessage("Parameter '" + parameter + "' is unknown.");
+                Printer.DebugMessage("Parameter '" + parameter + "' is unknown.");
                 Masterserver.FaultyParameterNotification(parameter);
                 ShowHelp();
                 Environment.Exit(2);
             }
         }
         if (args.Contains("--port")) {
-            DebugMessage("--port switch found");
+           Printer.DebugMessage("--port switch found");
             int portswitchposition = Array.IndexOf(args, "--port");
             if (portswitchposition == (args.Length - 1)) {
                 Console.WriteLine("--port switch requires a port value for the UDP port to be used for listening.");
@@ -124,7 +119,7 @@ public class Masterserver {
             Environment.Exit(2);
         }
         if (args.Contains("--copy-from")) {
-            DebugMessage("--copy-from switch found");
+           Printer.DebugMessage("--copy-from switch found");
             int masterListPosition = Array.IndexOf(args, "--copy-from");
             if (masterListPosition == (args.Length - 1)) {
                 Console.WriteLine("--copy-from switch requires a comma separated list of servers or IPs, that should be used for querying of other master servers.");
@@ -138,7 +133,7 @@ public class Masterserver {
             int intervalPosition = -1;
             int interval = 0;
             if (args.Contains("--interval")) {
-                DebugMessage("--interval switch found");
+               Printer.DebugMessage("--interval switch found");
                 intervalPosition = Array.IndexOf(args, "--interval");
                 if (intervalPosition == (args.Length - 1)) {
                     Console.WriteLine("--interval switch requires an integer value representing the time interval for querying other master servers in seconds. May not be lower than 60.");
@@ -154,26 +149,26 @@ public class Masterserver {
                     Environment.Exit(2);
                 }
             }
-            Masterserver.DebugMessage("Masterservers: " + masterServerString);
+            Printer.DebugMessage("Masterservers: " + masterServerString);
             string commaPattern = "\\s*,\\s*";
             string[] masterServerArray = Regex.Split(masterServerString, commaPattern);
             if (masterServerArray.Length != 0) {
-                DebugMessage("Found following master servers provided:");
+               Printer.DebugMessage("Found following master servers provided:");
                 foreach (string server in masterServerArray) {
-                    DebugMessage("\"" + server + "\"");
+                   Printer.DebugMessage("\"" + server + "\"");
                 }
 
                 if (interval == 0) {
-                    DebugMessage("No interval given, starting master query once.");
+                   Printer.DebugMessage("No interval given, starting master query once.");
                     ServerList.QueryOtherMasters(masterServerArray);
                 } else {
-                    DebugMessage("Interval " + interval + " given, starting master query repeatedly.");
+                   Printer.DebugMessage("Interval " + interval + " given, starting master query repeatedly.");
                     ServerList.QueryOtherMastersThreaded(masterServerArray, interval);
                 }
                 //Environment.Exit(0);
             }
             else {
-                DebugMessage("Found no master servers provided!");
+               Printer.DebugMessage("Found no master servers provided!");
             }
         }
     }
@@ -217,7 +212,4 @@ public class Masterserver {
         return 0;
     }
 
-    public static void DebugMessage (string debugmessage) {
-        if (GetDebug()) {Console.WriteLine(" debug: {0}", debugmessage);}
-    }
 }

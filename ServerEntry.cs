@@ -32,7 +32,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
     }
 
     public ServerEntry(string ip_port):base() {
-        Masterserver.DebugMessage("Entering ServerEntry(" + ip_port + ")");
+        Printer.DebugMessage("Entering ServerEntry(" + ip_port + ")");
         string ip_port_pattern = "[\\d,A-F,a-f]{12}";
         Regex checker = new Regex (ip_port_pattern);
         if (checker.IsMatch(ip_port)) {
@@ -46,9 +46,9 @@ public class ServerEntry : IEquatable<ServerEntry>{
             this.address = IPAddress.Parse(ip);
         }
         else {
-            Masterserver.DebugMessage("Warning: No valid address string provided!");
+            Printer.DebugMessage("Warning: No valid address string provided!");
         }
-        Masterserver.DebugMessage("Leaving ServerEntry(" + ip_port + ")");
+        Printer.DebugMessage("Leaving ServerEntry(" + ip_port + ")");
     }
 
     public bool IsFull() {
@@ -72,17 +72,17 @@ public class ServerEntry : IEquatable<ServerEntry>{
     }
 
     private void SetProtocol(string protocol) {
-        Masterserver.DebugMessage("SetProtocol(string protocol)");
+        Printer.DebugMessage("SetProtocol(string protocol)");
         if (!Int32.TryParse(protocol, out this.protocol)) {
             this.protocol = 0;
         }
-        Masterserver.DebugMessage("Set protocol to: " + this.protocol);
+        Printer.DebugMessage("Set protocol to: " + this.protocol);
     }
 
     private void SetProtocol(int protocol) {
-        Masterserver.DebugMessage("SetProtocol(int protocol)");
+        Printer.DebugMessage("SetProtocol(int protocol)");
         this.protocol = protocol;
-        Masterserver.DebugMessage("Set protocol to: " + this.protocol);
+        Printer.DebugMessage("Set protocol to: " + this.protocol);
     }
 
     public int GetProtocol() {
@@ -137,9 +137,9 @@ public class ServerEntry : IEquatable<ServerEntry>{
     }
 
     public void QueryInfo() {
-        Masterserver.DebugMessage("Querying status from server " + this + "...");
+        Printer.DebugMessage("Querying status from server " + this + "...");
         if (this.port == 0) {
-            Masterserver.DebugMessage("Server hasn't been initalized.");
+            Printer.DebugMessage("Server hasn't been initalized.");
             return;
         }
 
@@ -150,25 +150,25 @@ public class ServerEntry : IEquatable<ServerEntry>{
 
         byte[] receivedBytes = NetworkBasics.GetAnswer(destination_ip, destination_port, server_status_query_head);
         if (receivedBytes == null) {
-            Masterserver.DebugMessage("Didn't receive any data from " + this.ToString() + ".");
+            Printer.DebugMessage("Didn't receive any data from " + this.ToString() + ".");
             return;
         }
 
         Byte[] start = receivedBytes.Take(Encoding.ASCII.GetString(server_response_head).Length).ToArray();
         Byte[] end   = receivedBytes.Skip(Encoding.ASCII.GetString(server_response_head).Length + 1).ToArray();
 
-        Masterserver.DebugMessage("Received data from " + this.ToString() + ".");
+        Printer.DebugMessage("Received data from " + this.ToString() + ".");
         if (start.SequenceEqual(server_response_head)) {
-            Masterserver.DebugMessage("Found an expected header from " + this.ToString() + ".");
+            Printer.DebugMessage("Found an expected header from " + this.ToString() + ".");
             string returnData = Encoding.ASCII.GetString(end);
             string[] blocks = returnData.Split('"');
             if (blocks.Length != 2) {
-                Masterserver.DebugMessage("Warning: Received uneven number of data values from remote host.");
+                Printer.DebugMessage("Warning: Received uneven number of data values from remote host.");
                 this.protocol = 0;
                 return;
             }
             string datablock = blocks[0].Substring(1);
-            Masterserver.DebugMessage("Received data '" + datablock + "' from " + this.ToString());
+            Printer.DebugMessage("Received data '" + datablock + "' from " + this.ToString());
 
             Dictionary <string,string> temp_query_values = Parser.SplitStringToParameters(datablock);
             if (temp_query_values == null) {
@@ -179,11 +179,11 @@ public class ServerEntry : IEquatable<ServerEntry>{
 
             string protocol;
             if (!temp_query_values.TryGetValue("protocol", out protocol)) {
-                Masterserver.DebugMessage("Didn't receive any protocol from " + this.ToString() + ".");
+                Printer.DebugMessage("Didn't receive any protocol from " + this.ToString() + ".");
                 SetProtocol("0");
             }
             else {
-                Masterserver.DebugMessage("Protocol " + protocol + " received from " + this.ToString() + ".");
+                Printer.DebugMessage("Protocol " + protocol + " received from " + this.ToString() + ".");
                 SetProtocol(protocol);
             }
             string sv_maxclients;
@@ -210,7 +210,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
             return;
         }
         else {
-            Masterserver.DebugMessage("Unrecognized response '" + Encoding.ASCII.GetString(receivedBytes) + "' from " + this.ToString());
+            Printer.DebugMessage("Unrecognized response '" + Encoding.ASCII.GetString(receivedBytes) + "' from " + this.ToString());
             this.protocol = 0;
             return;
         }
@@ -218,9 +218,9 @@ public class ServerEntry : IEquatable<ServerEntry>{
     }
 
     public void QueryDetails() {
-        Masterserver.DebugMessage("Querying details from server " + this + "...");
+        Printer.DebugMessage("Querying details from server " + this + "...");
         if (this.protocol == 0) {
-            Masterserver.DebugMessage("This server has not been initalized, yet.");
+            Printer.DebugMessage("This server has not been initalized, yet.");
             return;
         }
 
@@ -231,22 +231,22 @@ public class ServerEntry : IEquatable<ServerEntry>{
 
         byte[] receivedBytes = NetworkBasics.GetAnswer(destination_ip, destination_port, server_details_query_head);
         if (receivedBytes == null) {
-            Masterserver.DebugMessage("Didn't receive any data from " + this.ToString() + ".");
+            Printer.DebugMessage("Didn't receive any data from " + this.ToString() + ".");
             return;
         }
 
         Byte[] start    = receivedBytes.Take(Encoding.ASCII.GetString(server_details_answer_head).Length).ToArray();
         Byte[] payload  = receivedBytes.Skip(Encoding.ASCII.GetString(server_details_answer_head).Length).ToArray();
 
-        Masterserver.DebugMessage("Received data from " + this.ToString() + ".");
+        Printer.DebugMessage("Received data from " + this.ToString() + ".");
         if (start.SequenceEqual(server_details_answer_head)) {
-            Masterserver.DebugMessage("Found an expected header from " + this.ToString() + ".");
+            Printer.DebugMessage("Found an expected header from " + this.ToString() + ".");
             string returnData = Encoding.ASCII.GetString(payload);
             string serverDetails = Parser.GetDataFromDetails(returnData);
             this.playerList = Parser.GetPlayersFromDetails(returnData);
             Dictionary <string,string> detail_values = Parser.SplitStringToParameters(serverDetails);
             if (detail_values == null) {
-                Masterserver.DebugMessage("I got nothing.");
+                Printer.DebugMessage("I got nothing.");
                 return;
             }
 
@@ -254,7 +254,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
             return;
         }
         else {
-            Masterserver.DebugMessage("Unrecognized response '" + Encoding.ASCII.GetString(receivedBytes) + "' from " + this.ToString());
+            Printer.DebugMessage("Unrecognized response '" + Encoding.ASCII.GetString(receivedBytes) + "' from " + this.ToString());
             this.protocol = 0;
             return;
         }
