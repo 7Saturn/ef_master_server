@@ -7,8 +7,9 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 //requires mono-runtime and libmono-system-core4.0-cil packages under Ubuntu 14 resp. Debian 9
-//requires mono-core package under Suse LEAP
+//requires mono-core package under Suse LEAP and MacOS
 //requires mono-mcs and libmono-cil-dev for compiling under Debian/Ubuntu
+//requires libgdiplus for running on FreeBSD
 
 public class Masterserver {
     public const string VersionString = "0.3";
