@@ -4,8 +4,24 @@ using System.Net.Sockets;
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
+using System.Threading;
 
 class HeartbeatListener {
+
+    private static Thread listenerThreadHandle;
+
+    public static Thread StartListenerThread(ushort listenPort = 27953) {
+        Masterserver.DebugMessage("Starting listener thread.");
+        listenerThreadHandle = new Thread(() => StartListener(listenPort));
+        listenerThreadHandle.Start();
+        return listenerThreadHandle;
+    }
+
+    public static void StopListenerThread() {
+        Masterserver.DebugMessage("Stopping listener thread.");
+        listenerThreadHandle.Abort();
+    }
+
     public static void StartListener(ushort listenPort = 27953)
     {
         UdpClient listener = new UdpClient((int)listenPort);

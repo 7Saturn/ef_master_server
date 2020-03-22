@@ -4,15 +4,17 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 //requires mono-runtime and libmono-system-core4.0-cil packages under Ubuntu 14 resp. Debian 9
 //requires mono-core package under Suse LEAP
 //requires mono-mcs and libmono-cil-dev for compiling under Debian/Ubuntu
 
 public class Masterserver {
-    public const string VersionString = "0.2";
+    public const string VersionString = "0.3";
     private static bool debug = false;
     private static bool verbose = false;
+    private static bool useGui = false;
     private static ushort master_port = 27953;
     private static string OwnFileName = Environment.GetCommandLineArgs()[0].Replace(Directory.GetCurrentDirectory(), ".");
 
@@ -55,7 +57,7 @@ public class Masterserver {
 
     private static void ParseArgs(string[] args) {
         string[] twoPartParameters = {"--port", "--copy-from", "--interval"};
-        string[] onePartParameters = {"--help", "--debug", "--verbose"};
+        string[] onePartParameters = {"--help", "--debug", "--verbose", "--withgui"};
         if (args.Length == 0) {
             return;
         }
@@ -67,6 +69,9 @@ public class Masterserver {
         if (   args.Contains("--debug")
             || args.Contains("--verbose")) {
 			Console.WriteLine("Starting EF master server ver. {0}...", Masterserver.VersionString);
+        }
+        if (args.Contains("--withgui")) {
+            useGui = true;
         }
         if (args.Contains("--debug")) {
             Console.WriteLine("--debug: OK, you want it all...");
@@ -201,7 +206,14 @@ public class Masterserver {
 
     public static int Main(string[] args) {
         ParseArgs(args);
-        HeartbeatListener.StartListener(GetPort());
+        if (useGui) {
+            HeartbeatListener.StartListenerThread(GetPort());
+            Application.Run (new Gui(VersionString));
+            HeartbeatListener.StopListenerThread();
+        }
+        else {
+            HeartbeatListener.StartListener(GetPort());
+        }
         return 0;
     }
 

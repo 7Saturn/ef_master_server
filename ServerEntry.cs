@@ -59,6 +59,14 @@ public class ServerEntry : IEquatable<ServerEntry>{
         return empty;
     }
 
+    public string GetAddress() {
+        return this.address.ToString();
+    }
+
+    public ushort GetPort() {
+        return this.port;
+    }
+
     private string port_in_hex() {
         return string.Format("{0:x2}", this.port);
     }
