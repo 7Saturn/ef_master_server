@@ -18,11 +18,13 @@ public class Gui : Form
         else {
             Printer.DebugMessage(icon48path + " is missing, but it should be delivered along with this program.");
         }
-        serverListTable = new ListView();
-        serverListTable.Bounds = new Rectangle(new Point(10,10), new Size(549,353));
         this.Size = new Size(576,432);
         this.Text = "EF Masterserver Version " + version;
         this.FormBorderStyle = FormBorderStyle.FixedSingle;
+        this.MaximizeBox = false;
+
+        serverListTable = new ListView();
+        serverListTable.Bounds = new Rectangle(new Point(10,10), new Size(549,353));
         // Set the view to show details.
         serverListTable.View = View.Details;
         // Prevent the user from editing item text.
@@ -51,7 +53,7 @@ public class Gui : Form
         exit_button.Parent = this;
         CancelButton = exit_button;
 		exit_button.Click += new EventHandler (Shutdown); //Event (Button_Click)
-
+        this.FormClosing += new FormClosingEventHandler(Shutdown);
         Button refresh_button = new Button();
         refresh_button.Text = "Refresh";
         button_tooltip.SetToolTip(refresh_button, "Refreshes the Masterserver list from memory (Enter)");
@@ -68,6 +70,7 @@ public class Gui : Form
     {
         Environment.Exit(0);
     }
+
     private void Refresh (object sender, EventArgs e)
     {
         serverListTable.Clear();
