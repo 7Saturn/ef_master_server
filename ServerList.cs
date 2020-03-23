@@ -44,12 +44,7 @@ public static class ServerList {
         }
         if (!ServerList.get_list().Contains(new_one)) {
             Printer.DebugMessage("A new one arrived, querying data...");
-            //Stopwatch stopwatch = new Stopwatch();
-            //stopwatch.Start();
             new_one.QueryInfo();
-            //stopwatch.Stop();
-            //Printer.DebugMessage("Time elapsed: " + stopwatch.ElapsedMilliseconds + " ms.");
-            //stopwatch.Reset();
             ServerList.get_list().Add(new_one);
             Printer.DebugMessage("Now list looks like this: " + ServerList.get_text_list());
         }
@@ -92,7 +87,7 @@ public static class ServerList {
         }
 
         for (int counter = number_of_all-1; counter >= 0; counter--) {
-            if (ServerList.get_list()[counter].GetProtocol() == 0) {
+            if (ServerList.get_list()[counter].GetProtocol() == -1) {
                 ServerList.RemoveServer(looptemp[counter]);
             }
         }

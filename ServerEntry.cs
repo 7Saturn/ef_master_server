@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 public class ServerEntry : IEquatable<ServerEntry>{
     ushort port;
     IPAddress address;
-    int protocol = 0;
+    int protocol = -1;
     bool full = false;
     bool empty = false;
     private Dictionary <string,string> query_values = new Dictionary <string,string>();
@@ -74,7 +74,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
     private void SetProtocol(string protocol) {
         Printer.DebugMessage("SetProtocol(string protocol)");
         if (!Int32.TryParse(protocol, out this.protocol)) {
-            this.protocol = 0;
+            this.protocol = -1;
         }
         Printer.DebugMessage("Set protocol to: " + this.protocol);
     }
@@ -164,54 +164,56 @@ public class ServerEntry : IEquatable<ServerEntry>{
             string[] blocks = returnData.Split('"');
             if (blocks.Length != 2) {
                 Printer.DebugMessage("Warning: Received uneven number of data values from remote host.");
-                this.protocol = 0;
+                this.protocol = -1;
                 return;
             }
             string datablock = blocks[0].Substring(1);
             Printer.DebugMessage("Received data '" + datablock + "' from " + this.ToString());
 
-            Dictionary <string,string> temp_query_values = Parser.SplitStringToParameters(datablock);
-            if (temp_query_values == null) {
-                this.protocol = 0;
+            Dictionary <string,string> received_query_values = Parser.SplitStringToParameters(datablock);
+            if (received_query_values == null) {
+                Printer.DebugMessage("received_query_values are null, assuming server went offline and deleting its data");
+                this.protocol = -1;
+                this.port = 0;
                 query_values = new Dictionary <string,string>();
                 return;
             }
 
             string protocol;
-            if (!temp_query_values.TryGetValue("protocol", out protocol)) {
+            if (!received_query_values.TryGetValue("protocol", out protocol)) {
                 Printer.DebugMessage("Didn't receive any protocol from " + this.ToString() + ".");
-                SetProtocol("0");
+                SetProtocol("-1");
             }
             else {
                 Printer.DebugMessage("Protocol " + protocol + " received from " + this.ToString() + ".");
                 SetProtocol(protocol);
             }
+            this.query_values = Parser.ConcatDictionaries(this.query_values,received_query_values);
             string sv_maxclients;
             string clients;
-            if (!query_values.TryGetValue("sv_maxclients", out sv_maxclients)) {
-                this.full = false;
-                this.empty = false;
-            }
-            else if (!query_values.TryGetValue("clients", out clients)) {
+            if (   !query_values.TryGetValue("sv_maxclients", out sv_maxclients)
+                || !query_values.TryGetValue("clients", out clients)) {
+                Printer.DebugMessage("Lacking some information, assuming server is neither full nor empty.");
                 this.full = false;
                 this.empty = false;
             }
             else {
                 int clients_n = int.Parse(clients);
-                int sv_maxclients_n = int.Parse(clients);
+                int sv_maxclients_n = int.Parse(sv_maxclients);
                 if (clients_n == 0) {
+                    Printer.DebugMessage("Found Server zu be empty.");
                     this.empty = true;
                 }
                 if (clients_n.Equals(sv_maxclients_n)) {
+                    Printer.DebugMessage("Found Server zu be full.");
                     this.full = true;
                 }
             }
-            this.query_values = Parser.ConcatDictionaries(this.query_values,temp_query_values);
             return;
         }
         else {
             Printer.DebugMessage("Unrecognized response '" + Encoding.ASCII.GetString(receivedBytes) + "' from " + this.ToString());
-            this.protocol = 0;
+            this.protocol = -1;
             return;
         }
 
@@ -219,7 +221,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
 
     public void QueryDetails() {
         Printer.DebugMessage("Querying details from server " + this + "...");
-        if (this.protocol == 0) {
+        if (this.protocol == -1) {
             Printer.DebugMessage("This server has not been initalized, yet.");
             return;
         }
@@ -255,7 +257,7 @@ public class ServerEntry : IEquatable<ServerEntry>{
         }
         else {
             Printer.DebugMessage("Unrecognized response '" + Encoding.ASCII.GetString(receivedBytes) + "' from " + this.ToString());
-            this.protocol = 0;
+            this.protocol = -1;
             return;
         }
 

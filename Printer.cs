@@ -29,6 +29,7 @@ public class Printer {
     }
 
     public static void DumpDictionary(Dictionary <string,string> hash) {
+        Printer.DebugMessage("DumpDictionary");
         foreach (KeyValuePair<string, string> item in hash)
         {
             Console.WriteLine("'{0}' => '{1}'", item.Key, item.Value);

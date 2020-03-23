@@ -16,6 +16,8 @@ public class Masterserver {
     private static bool useGui = false;
     private static ushort master_port = 27953;
     private static string OwnFileName = Environment.GetCommandLineArgs()[0].Replace(Directory.GetCurrentDirectory(), ".");
+    private static string[] masterServerArray;
+    private static int interval = 0;
 
     public static string getStartCommand() {
         string currentSystemType = System.Environment.OSVersion.Platform.ToString();
@@ -43,6 +45,14 @@ public class Masterserver {
 
     private static void FaultyParameterNotification(string parameter) {
         Console.WriteLine("Parameter '{0}' is unknown.", parameter);
+    }
+
+    public static string[] GetMasterServerSources() {
+        return masterServerArray;
+    }
+
+    public static int GetMasterServerQueryInterval() {
+        return interval;
     }
 
 
@@ -110,7 +120,8 @@ public class Masterserver {
             Printer.VerboseMessage("--port: Using port " + port + " for incoming connections.");
             master_port = (ushort)port;
         }
-        if (!args.Contains("--copy-from") && args.Contains("--interval")) {
+        if (   !args.Contains("--copy-from")
+            && args.Contains("--interval")) {
             Console.WriteLine("--interval switch requires --copy-from switch.");
             Environment.Exit(2);
         }
@@ -122,32 +133,33 @@ public class Masterserver {
                 Environment.Exit(2);
             }
             string masterServerString = args[Array.IndexOf(args, "--copy-from") + 1];
-            if (onePartParameters.Contains(masterServerString) || twoPartParameters.Contains(masterServerString)) {
+            if (   onePartParameters.Contains(masterServerString)
+                || twoPartParameters.Contains(masterServerString)) {
                 Console.WriteLine("--copy-from switch contains no valid master server hosts.");
                 Environment.Exit(2);
             }
             int intervalPosition = -1;
-            int interval = 0;
+
             if (args.Contains("--interval")) {
                Printer.DebugMessage("--interval switch found");
-                intervalPosition = Array.IndexOf(args, "--interval");
-                if (intervalPosition == (args.Length - 1)) {
-                    Console.WriteLine("--interval switch requires an integer value representing the time interval for querying other master servers in seconds. May not be lower than 60.");
-                    Environment.Exit(2);
-                }
-                bool worked = Int32.TryParse(args[Array.IndexOf(args, "--interval") + 1], out interval);
-                if (!worked) {
-                    Console.WriteLine("--interval switch was used but the following parameter {0} does not seem to be a valid integer value.", args[Array.IndexOf(args, "--interval") + 1]);
-                    Environment.Exit(2);
-                }
-                if (interval < 60) {
-                    Console.WriteLine("--interval switch was used but the following parameter {0} is not bigger than 59.", args[Array.IndexOf(args, "--interval") + 1]);
-                    Environment.Exit(2);
-                }
+               intervalPosition = Array.IndexOf(args, "--interval");
+               if (intervalPosition == (args.Length - 1)) {
+                   Console.WriteLine("--interval switch requires an integer value representing the time interval for querying other master servers in seconds. May not be lower than 60.");
+                   Environment.Exit(2);
+               }
+               if (!Int32.TryParse(args[Array.IndexOf(args, "--interval") + 1],
+                                   out interval)) {
+                   Console.WriteLine("--interval switch was used but the following parameter {0} does not seem to be a valid integer value.", args[Array.IndexOf(args, "--interval") + 1]);
+                   Environment.Exit(2);
+               }
+               if (interval < 60) {
+                   Console.WriteLine("--interval switch was used but the following parameter {0} is not bigger than 59.", args[Array.IndexOf(args, "--interval") + 1]);
+                   Environment.Exit(2);
+               }
             }
             Printer.DebugMessage("Masterservers: " + masterServerString);
             string commaPattern = "\\s*,\\s*";
-            string[] masterServerArray = Regex.Split(masterServerString, commaPattern);
+            masterServerArray = Regex.Split(masterServerString, commaPattern);
             if (masterServerArray.Length != 0) {
                Printer.DebugMessage("Found following master servers provided:");
                 foreach (string server in masterServerArray) {
@@ -156,7 +168,7 @@ public class Masterserver {
 
                 if (interval == 0) {
                    Printer.DebugMessage("No interval given, starting master query once.");
-                    ServerList.QueryOtherMasters(masterServerArray);
+                   ServerList.QueryOtherMasters(masterServerArray);
                 } else {
                    Printer.DebugMessage("Interval " + interval + " given, starting master query repeatedly.");
                     ServerList.QueryOtherMastersThreaded(masterServerArray, interval);

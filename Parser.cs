@@ -72,6 +72,12 @@ public static class Parser {
         {
             third.Add(item.Key,item.Value);
         }
+        Printer.DebugMessage ("ConcatDictionaries");
+        if (Printer.GetDebug()) {
+            Printer.DumpDictionary(first);
+            Printer.DumpDictionary(second);
+            Printer.DumpDictionary(third);
+        }
         return third;
     }
 
