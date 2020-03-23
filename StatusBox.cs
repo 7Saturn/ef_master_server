@@ -30,7 +30,7 @@ public class StatusBox : Form
 
         this.origin = sourceWindow;
         Printer.DebugMessage("Creating status window...");
-        this.Size = new Size(576,432);
+        this.Size = new Size(429, 335);
         this.Text = "Status of Masterserver";
         this.FormBorderStyle = FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
@@ -44,8 +44,9 @@ public class StatusBox : Form
         Button close_button = new Button();
         close_button.Text = "Close";
         this.Controls.Add(close_button);
-        close_button.Location = new Point(359, 375);
+        close_button.Location = new Point(177, 285);
         close_button.Parent = this;
+        Printer.DebugMessage(close_button.Width.ToString());
         CancelButton = close_button;
 		close_button.Click += new EventHandler (CloseThis); //Event (Button_Click)
 
@@ -77,7 +78,7 @@ public class StatusBox : Form
         port_text.Height = 20;
         port_text.AutoSize = false;
         port_text.Width = rightColumnWith;
-        port_text.Text = Masterserver.GetPort().ToString();
+        port_text.Text = Masterserver.GetPort().ToString() + " (UDP)";
         port_text.Parent = this;
         button_tooltip.SetToolTip(port_text, "This is the network port the server is listening on.");
 
@@ -133,7 +134,7 @@ public class StatusBox : Form
             masterServerListString = String.Join("\n", masterServerListStrings);
         }
         this.masterServerList.Text = masterServerListString;
-        this.masterServerList.Location = new Point (leftColumnWith,80);
+        this.masterServerList.Location = new Point (leftColumnWith + 1, 80);
         this.masterServerList.Width = rightColumnWith;
         this.masterServerList.Height = 178;
         this.masterServerList.AcceptsReturn = true;
