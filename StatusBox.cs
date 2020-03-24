@@ -46,7 +46,6 @@ public class StatusBox : Form
         this.Controls.Add(close_button);
         close_button.Location = new Point(177, 285);
         close_button.Parent = this;
-        Printer.DebugMessage(close_button.Width.ToString());
         CancelButton = close_button;
 		close_button.Click += new EventHandler (CloseThis); //Event (Button_Click)
 

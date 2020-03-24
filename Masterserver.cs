@@ -1,6 +1,7 @@
 using System;
 using System.Net.Sockets;
 using System.Linq;
+using System.Threading;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -14,6 +15,7 @@ using System.Windows.Forms;
 public class Masterserver {
     public const string VersionString = "0.3";
     private static bool useGui = false;
+    private static Thread queryOtherMasterServersThread = null;
     private static ushort master_port = 27953;
     private static string OwnFileName = Environment.GetCommandLineArgs()[0].Replace(Directory.GetCurrentDirectory(), ".");
     private static string[] masterServerArray;
@@ -29,6 +31,10 @@ public class Masterserver {
             Console.WriteLine("System: '{0}'", currentSystemType);
             return OwnFileName;
         }
+    }
+
+    public static Thread GetOtherMasterServerQueryThread() {
+        return queryOtherMasterServersThread;
     }
 
     public static ushort GetPort() {
@@ -126,7 +132,7 @@ public class Masterserver {
             Environment.Exit(2);
         }
         if (args.Contains("--copy-from")) {
-           Printer.DebugMessage("--copy-from switch found");
+            Printer.DebugMessage("--copy-from switch found");
             int masterListPosition = Array.IndexOf(args, "--copy-from");
             if (masterListPosition == (args.Length - 1)) {
                 Console.WriteLine("--copy-from switch requires a comma separated list of servers or IPs, that should be used for querying of other master servers.");
@@ -162,18 +168,18 @@ public class Masterserver {
             masterServerArray = Regex.Split(masterServerString, commaPattern);
             if (masterServerArray.Length != 0) {
                Printer.DebugMessage("Found following master servers provided:");
-                foreach (string server in masterServerArray) {
+               foreach (string server in masterServerArray) {
                    Printer.DebugMessage("\"" + server + "\"");
-                }
+               }
 
-                if (interval == 0) {
+               if (interval == 0) {
                    Printer.DebugMessage("No interval given, starting master query once.");
                    ServerList.QueryOtherMasters(masterServerArray);
-                } else {
+               } else {
                    Printer.DebugMessage("Interval " + interval + " given, starting master query repeatedly.");
-                    ServerList.QueryOtherMastersThreaded(masterServerArray, interval);
-                }
-                //Environment.Exit(0);
+                   queryOtherMasterServersThread = ServerList.QueryOtherMastersThreaded(masterServerArray, interval);
+               }
+               //Environment.Exit(0);
             }
             else {
                Printer.DebugMessage("Found no master servers provided!");

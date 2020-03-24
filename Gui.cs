@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
@@ -9,6 +8,8 @@ public class Gui : Form
 {
     private ListView serverListTable;
     private StatusBox statusBox;
+
+    public delegate void DoRefreshFromOutside();
 
     public Gui(string version)
     {
@@ -28,26 +29,7 @@ public class Gui : Form
         this.FormBorderStyle = FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
 
-        serverListTable = new ListView();
-        serverListTable.Bounds = new Rectangle(new Point(10,10), new Size(549,353));
-        // Set the view to show details.
-        serverListTable.View = View.Details;
-        // Prevent the user from editing item text.
-        serverListTable.LabelEdit = false;
-        // Allow the user to rearrange columns.
-        serverListTable.AllowColumnReorder = true;
-        // Display no check boxes.
-        serverListTable.CheckBoxes = false;
-        // Select the item and subitems when selection is made.
-        serverListTable.FullRowSelect = true;
-        // Display grid lines.
-        serverListTable.GridLines = true;
-        serverListTable.MultiSelect = false;
-        //Initializing the list
-        Refresh(null, null);
-
-        // Add the ListView to the control collection.
-        this.Controls.Add(serverListTable);
+        DoRefresh();
 
         Button exit_button = new Button();
         exit_button.Text = "Exit";
@@ -78,32 +60,70 @@ public class Gui : Form
 		status_button.Click += new EventHandler (ShowStatus); //Event (Button_Click)
 
         CenterToScreen();
+        ServerList.RegisterObserver(this);
     }
 
     private void Shutdown (object sender, EventArgs e)
     {
         Printer.DebugMessage("Shutdown was requested.");
+        if (Masterserver.GetOtherMasterServerQueryThread() != null) {
+            Masterserver.GetOtherMasterServerQueryThread().Abort();
+        }
         Environment.Exit(0);
     }
 
     private void Refresh (object sender, EventArgs e)
     {
-        Printer.DebugMessage("Refresh of main window was requested.");
-        serverListTable.Clear();
+        Printer.DebugMessage("Refresh of main window was requested by button.");
+        DoRefresh();
+    }
+
+    public void DoRefresh() {
+        Printer.DebugMessage("Doing refresh of main window.");
+
+        if (serverListTable != null) {
+            Printer.DebugMessage("removing serverListTable");
+            this.Controls.Remove(serverListTable);
+        }
+        ListView tempList = new ListView();
+        tempList.BeginUpdate();
+        InitalizeServerListTable(ref tempList);
+        Printer.DebugMessage("Building List...");
         List<ServerEntry> serverList = ServerList.get_list();
         foreach (ServerEntry serverEntry in serverList) {
             if (serverEntry.GetProtocol() != -1) {
+                Printer.DebugMessage("Adding List Items");
                 ListViewItem serverItem = ListItemFromStrings(serverEntry.GetAddress() + ":" + serverEntry.GetPort(),
                                                               serverEntry.GetProtocol().ToString(),
                                                               serverEntry.IsEmpty() ? "yes" : "no",
                                                               serverEntry.IsFull() ? "yes" : "no");
-                serverListTable.Items.Add(serverItem);
-                serverListTable.Sorting = SortOrder.Ascending;
+                tempList.Items.Add(serverItem);
+                tempList.Sorting = SortOrder.Ascending;
             }
         }
-        SetTableHeader();
+        Printer.DebugMessage("Adding Header...");
+        SetTableHeader(ref tempList);
+        serverListTable = tempList;
+        tempList.EndUpdate();
+        this.Controls.Add(serverListTable);
     }
 
+    public void RefreshSafe() {
+        Printer.DebugMessage("RefreshSafe");
+        if (serverListTable.InvokeRequired)
+        {
+            Printer.DebugMessage("invoke");
+            var d = new DoRefreshFromOutside(DoRefresh);
+            Printer.DebugMessage("invoking...");
+            serverListTable.Invoke(d);
+        }
+        else
+        {
+            Printer.DebugMessage("normal");
+            Refresh();
+        }
+
+    }
     private ListViewItem ListItemFromStrings(string serverAndPort,
                                              string protocol,
                                              string isEmpty,
@@ -115,14 +135,15 @@ public class Gui : Form
         return listElement;
     }
 
-    private void SetTableHeader() {
+    private void SetTableHeader(ref ListView listView) {
+        Printer.DebugMessage("SetTableHeader");
         // Create columns for the items and subitems.
         // Width of -1 indicates auto-size for data columns.
         // Width of -2 indicates auto-size for data header.
-        serverListTable.Columns.Add("Server", 150, HorizontalAlignment.Left);
-        serverListTable.Columns.Add("Protocol", 60, HorizontalAlignment.Center);
-        serverListTable.Columns.Add("Is Empty", 60, HorizontalAlignment.Center);
-        serverListTable.Columns.Add("Is Full", 45, HorizontalAlignment.Center);
+        listView.Columns.Add("Server", 150, HorizontalAlignment.Left);
+        listView.Columns.Add("Protocol", 60, HorizontalAlignment.Center);
+        listView.Columns.Add("Is Empty", 60, HorizontalAlignment.Center);
+        listView.Columns.Add("Is Full", 45, HorizontalAlignment.Center);
     }
 
     private void ShowStatus(object sender, EventArgs e) {
@@ -132,4 +153,24 @@ public class Gui : Form
         statusBox.Show();
         this.Hide();
     }
+
+    private void InitalizeServerListTable (ref ListView newListView) {
+        Printer.DebugMessage("InitalizeServerListTable");
+        newListView.Bounds = new Rectangle(new Point(10,10), new Size(549,353));
+        // Set the view to show details.
+        newListView.View = View.Details;
+        // Prevent the user from editing item text.
+        newListView.LabelEdit = false;
+        // Allow the user to rearrange columns.
+        newListView.AllowColumnReorder = true;
+        // Display no check boxes.
+        newListView.CheckBoxes = false;
+        // Select the item and subitems when selection is made.
+        newListView.FullRowSelect = true;
+        // Display grid lines.
+        newListView.GridLines = true;
+        newListView.MultiSelect = false;
+        //newListView.Items.Clear();
+    }
+
 }

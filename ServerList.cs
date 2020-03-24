@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Net.Sockets;
 using System.Net;
 using System.Linq;
 using System.Text;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 public static class ServerList {
     private static List<ServerEntry> serverlist = null;
     private static Thread CleanupThreadHandle = null;
+    private static Gui observingWindow = null;
 
     public static List<ServerEntry> get_list() {
         if (serverlist == null) {
@@ -56,11 +55,13 @@ public static class ServerList {
             Printer.DebugMessage("So got to query that one again...");
             old_one.QueryInfo();
         }
+        RefreshGuiList();
     }
 
     public static void RemoveServer(ServerEntry to_remove) {
         if (ServerList.get_list().Contains(to_remove)) {
             ServerList.get_list().Remove(to_remove);
+            RefreshGuiList();
         }
     }
 
@@ -91,6 +92,7 @@ public static class ServerList {
                 ServerList.RemoveServer(looptemp[counter]);
             }
         }
+        RefreshGuiList();
         Printer.DebugMessage("Now list looks like this: " + ServerList.get_text_list());
     }
 
@@ -137,7 +139,6 @@ public static class ServerList {
         else { //This works only if the other side knows the dump all request, which is a specialty of this master server you are currently viewing the code of.
             Printer.DebugMessage("Got data via dump all request -> no further queries as we got all we can get");
             ProcessReceivedListByteArray(receiveBytes);
-            return;
         }
     }
 
@@ -260,10 +261,11 @@ public static class ServerList {
         Printer.VerboseMessage("Finished querying");
     }
 
-    public static void QueryOtherMastersThreaded(string[] masterServerArray, int interval) {
+    public static Thread QueryOtherMastersThreaded(string[] masterServerArray, int interval) {
         Printer.DebugMessage("Querying provided master servers in intervals of " + interval + "s.");
         Thread thread = new Thread(() => ServerList.StartQueryOtherMastersThread(masterServerArray, interval));
         thread.Start();
+        return thread;
     }
 
     private static void StartQueryOtherMastersThread(string[] masterServerArray, int interval) {
@@ -289,6 +291,26 @@ public static class ServerList {
         while (true) {
             System.Threading.Thread.Sleep(600000); //Sleep first. Do NOT(!) do it the other way around. If you do this to fast, it might crash on slow or heavily loaded machines, as the list may not exist at first. Once every ten minutes should suffice.
             ServerList.Cleanup();
+        }
+    }
+
+    public static void RegisterObserver(Gui mainWindow) {
+        Printer.DebugMessage("RegisterObserver");
+        if (observingWindow == null) {
+            observingWindow = mainWindow;
+        }
+    }
+
+    public static void DeregisterObserver() {
+        Printer.DebugMessage("DeregisterObserver");
+        observingWindow = null;
+    }
+
+    private static void RefreshGuiList() {
+        Printer.DebugMessage("RefreshGuiList from Server List");
+        if (observingWindow != null) {
+            Printer.DebugMessage("Actually doing RefreshGuiList");
+            observingWindow.RefreshSafe();
         }
     }
 }
