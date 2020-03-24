@@ -204,9 +204,15 @@ public class ServerEntry : IEquatable<ServerEntry>{
                     Printer.DebugMessage("Found Server zu be empty.");
                     this.empty = true;
                 }
+                else {
+                    this.empty = false;
+                }
                 if (clients_n.Equals(sv_maxclients_n)) {
                     Printer.DebugMessage("Found Server zu be full.");
                     this.full = true;
+                }
+                else {
+                    this.full = false;
                 }
             }
             return;
