@@ -28,36 +28,38 @@ public class Gui : Form
         this.Text = "EF Masterserver Version " + version;
         this.FormBorderStyle = FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
+        this.KeyDown += HandleMainKeys;
+        this.KeyPreview = true;
 
         DoRefresh();
 
         Button exit_button = new Button();
         exit_button.Text = "Exit";
         ToolTip button_tooltip = new ToolTip(); //Can be used multiple times
-        button_tooltip.SetToolTip(this, "Here you can see a list of currently known servers."); //Window explains itself. ;-)
-        button_tooltip.SetToolTip(exit_button, "Closes the Masterserver (ESC)");
+
+        Button refresh_button = new Button();
+        refresh_button.Text = "Refresh";
+        button_tooltip.SetToolTip(refresh_button, "Refreshes the Masterserver list from memory (F5)");
+        this.Controls.Add(refresh_button);
+        refresh_button.Location = new Point(142, 375);
+        refresh_button.Parent = this;
+		refresh_button.Click += new EventHandler (Refresh); //Event (Button_Click)
+
+        Button status_button = new Button();
+        status_button.Text = "Status";
+        button_tooltip.SetToolTip(status_button, "Shows current state and settings of the masterserver (F6)");
+        status_button.Location = new Point(250, 375);
+        status_button.Parent = this;
+		status_button.Click += new EventHandler (ShowStatus); //Event (Button_Click)
+        AcceptButton = status_button;
+
+        button_tooltip.SetToolTip(exit_button, "Closes the Masterserver (F7/ESC)");
         this.Controls.Add(exit_button);
         exit_button.Location = new Point(359, 375);
         exit_button.Parent = this;
         CancelButton = exit_button;
 		exit_button.Click += new EventHandler (Shutdown); //Event (Button_Click)
         this.FormClosing += new FormClosingEventHandler(Shutdown);
-
-        Button refresh_button = new Button();
-        refresh_button.Text = "Refresh";
-        button_tooltip.SetToolTip(refresh_button, "Refreshes the Masterserver list from memory (Enter)");
-        this.Controls.Add(refresh_button);
-        refresh_button.Location = new Point(142, 375);
-        refresh_button.Parent = this;
-        AcceptButton = refresh_button;
-		refresh_button.Click += new EventHandler (Refresh); //Event (Button_Click)
-
-        Button status_button = new Button();
-        status_button.Text = "Status";
-        button_tooltip.SetToolTip(status_button, "Shows current state and settings of the masterserver");
-        status_button.Location = new Point(250, 375);
-        status_button.Parent = this;
-		status_button.Click += new EventHandler (ShowStatus); //Event (Button_Click)
 
         CenterToScreen();
         ServerList.RegisterObserver(this);
@@ -86,6 +88,11 @@ public class Gui : Form
             this.Controls.Remove(serverListTable);
         }
         ListView tempList = new ListView();
+        ToolTip button_tooltip = new ToolTip(); //Can be used multiple times
+        button_tooltip.SetToolTip(tempList, "List of known servers. Click on an entry and press CTRL + C to copy its address and port.");
+
+        tempList.KeyDown += CopyThat;
+
         tempList.BeginUpdate();
         InitalizeServerListTable(ref tempList);
         Printer.DebugMessage("Building List...");
@@ -104,8 +111,9 @@ public class Gui : Form
         Printer.DebugMessage("Adding Header...");
         SetTableHeader(ref tempList);
         serverListTable = tempList;
-        tempList.EndUpdate();
+        serverListTable.EndUpdate();
         this.Controls.Add(serverListTable);
+        this.Focus();
     }
 
     public void RefreshSafe() {
@@ -124,6 +132,7 @@ public class Gui : Form
         }
 
     }
+
     private ListViewItem ListItemFromStrings(string serverAndPort,
                                              string protocol,
                                              string isEmpty,
@@ -134,6 +143,32 @@ public class Gui : Form
         listElement.SubItems.Add(isFull);
         return listElement;
     }
+
+    private void CopyThat(object sender, KeyEventArgs e) {
+        if (e.Control && e.KeyCode == Keys.C) {
+            Printer.DebugMessage("CTRL + C detected");
+            Printer.DebugMessage("Von der Liste!");
+            ListViewItem markedOne = serverListTable.FocusedItem;
+            if (markedOne != null) {
+                Printer.DebugMessage(markedOne.ToString());
+                string serverAddress = markedOne.Text;
+                Clipboard.SetText(serverAddress);
+            }
+        }
+    }
+
+    private void HandleMainKeys(object sender, KeyEventArgs e) {
+        if (!e.Control && e.KeyCode == Keys.F5) {
+            DoRefresh();
+        }
+        else if (!e.Control && ((e.KeyCode == Keys.Escape) || (e.KeyCode == Keys.F7))) {
+            Shutdown(sender, e);
+        }
+        else if (!e.Control && e.KeyCode == Keys.F6) {
+            ShowStatus(sender, e);
+        }
+    }
+
 
     private void SetTableHeader(ref ListView listView) {
         Printer.DebugMessage("SetTableHeader");
@@ -159,6 +194,7 @@ public class Gui : Form
         newListView.Bounds = new Rectangle(new Point(10,10), new Size(549,353));
         // Set the view to show details.
         newListView.View = View.Details;
+        newListView.HideSelection = false;
         // Prevent the user from editing item text.
         newListView.LabelEdit = false;
         // Allow the user to rearrange columns.
@@ -170,7 +206,6 @@ public class Gui : Form
         // Display grid lines.
         newListView.GridLines = true;
         newListView.MultiSelect = false;
-        //newListView.Items.Clear();
     }
 
 }

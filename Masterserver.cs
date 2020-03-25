@@ -219,6 +219,7 @@ public class Masterserver {
         if (useGui) {
             HeartbeatListener.StartListenerThread(GetPort());
             try {
+                Application.EnableVisualStyles();
                 Application.Run (new Gui(VersionString));
             }
             catch (TypeInitializationException e) {

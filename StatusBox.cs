@@ -38,7 +38,7 @@ public class StatusBox : Form
         CenterToScreen();
 
         ToolTip button_tooltip = new ToolTip(); //Can be used multiple times
-        button_tooltip.SetToolTip(this, "Here you can the current configuration/status of the master server"); //Window explains itself. ;-)
+        button_tooltip.SetToolTip(this, "Here you can see the current configuration/status of the master server."); //Window explains itself. ;-)
 
 
         Button close_button = new Button();
@@ -48,6 +48,7 @@ public class StatusBox : Form
         close_button.Parent = this;
         CancelButton = close_button;
 		close_button.Click += new EventHandler (CloseThis); //Event (Button_Click)
+        button_tooltip.SetToolTip(close_button, "Closes this window and shows server list (ESC/Enter).");
 
         version_label.Location = new Point(0,0);
         version_label.Height = 20;
