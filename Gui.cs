@@ -101,6 +101,7 @@ public class Gui : Form
             if (serverEntry.GetProtocol() != -1) {
                 Printer.DebugMessage("Adding List Items");
                 ListViewItem serverItem = ListItemFromStrings(serverEntry.GetAddress() + ":" + serverEntry.GetPort(),
+                                                              serverEntry.GetHostname(),
                                                               serverEntry.GetProtocol().ToString(),
                                                               serverEntry.IsEmpty() ? "yes" : "no",
                                                               serverEntry.IsFull() ? "yes" : "no");
@@ -134,10 +135,12 @@ public class Gui : Form
     }
 
     private ListViewItem ListItemFromStrings(string serverAndPort,
+                                             string hostname,
                                              string protocol,
                                              string isEmpty,
                                              string isFull) {
         ListViewItem listElement = new ListViewItem(serverAndPort);
+        listElement.SubItems.Add(hostname);
         listElement.SubItems.Add(protocol);
         listElement.SubItems.Add(isEmpty);
         listElement.SubItems.Add(isFull);
@@ -176,6 +179,7 @@ public class Gui : Form
         // Width of -1 indicates auto-size for data columns.
         // Width of -2 indicates auto-size for data header.
         listView.Columns.Add("Server", 150, HorizontalAlignment.Left);
+        listView.Columns.Add("Host Name", 214, HorizontalAlignment.Left);
         listView.Columns.Add("Protocol", 60, HorizontalAlignment.Center);
         listView.Columns.Add("Is Empty", 60, HorizontalAlignment.Center);
         listView.Columns.Add("Is Full", 45, HorizontalAlignment.Center);

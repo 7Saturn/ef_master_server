@@ -13,6 +13,8 @@ public class ServerEntry : IEquatable<ServerEntry>{
     int protocol = -1;
     bool full = false;
     bool empty = false;
+    string hostname = "";
+
     private Dictionary <string,string> query_values = new Dictionary <string,string>();
     private List<Player> playerList = new List<Player>();
 
@@ -87,6 +89,10 @@ public class ServerEntry : IEquatable<ServerEntry>{
 
     public int GetProtocol() {
         return this.protocol;
+    }
+
+    public string GetHostname() {
+        return this.hostname;
     }
 
     private string ip_in_hex() {
@@ -188,6 +194,13 @@ public class ServerEntry : IEquatable<ServerEntry>{
                 Printer.DebugMessage("Protocol " + protocol + " received from " + this.ToString() + ".");
                 SetProtocol(protocol);
             }
+
+            string hostname;
+            if (received_query_values.TryGetValue("hostname", out hostname)) {
+                Printer.DebugMessage("Got host name '" + hostname + "' from server.");
+                this.hostname=hostname;
+            }
+
             this.query_values = Parser.ConcatDictionaries(this.query_values,received_query_values);
             string sv_maxclients;
             string clients;
