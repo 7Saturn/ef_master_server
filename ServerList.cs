@@ -9,7 +9,9 @@ using System.Text.RegularExpressions;
 public static class ServerList {
     private static List<ServerEntry> serverlist = null;
     private static Thread CleanupThreadHandle = null;
-    private static Gui observingWindow = null;
+    #if SERVER
+        private static Gui observingWindow = null;
+    #endif
 
     public static List<ServerEntry> get_list() {
         if (serverlist == null) {
@@ -55,14 +57,18 @@ public static class ServerList {
             Printer.DebugMessage("So got to query that one again...");
             old_one.QueryInfo();
         }
-        RefreshGuiList();
+        #if SERVER
+            RefreshGuiList();
+        #endif
     }
 
     public static void RemoveServer(ServerEntry to_remove) {
-        if (ServerList.get_list().Contains(to_remove)) {
-            ServerList.get_list().Remove(to_remove);
-            RefreshGuiList();
-        }
+        #if SERVER
+            if (ServerList.get_list().Contains(to_remove)) {
+                ServerList.get_list().Remove(to_remove);
+                RefreshGuiList();
+            }
+        #endif
     }
 
     public static void Cleanup() {
@@ -92,7 +98,9 @@ public static class ServerList {
                 ServerList.RemoveServer(looptemp[counter]);
             }
         }
-        RefreshGuiList();
+        #if SERVER
+            RefreshGuiList();
+        #endif
         Printer.DebugMessage("Now list looks like this: " + ServerList.get_text_list());
     }
 
@@ -294,23 +302,27 @@ public static class ServerList {
         }
     }
 
-    public static void RegisterObserver(Gui mainWindow) {
-        Printer.DebugMessage("RegisterObserver");
-        if (observingWindow == null) {
-            observingWindow = mainWindow;
+    #if SERVER
+        public static void RegisterObserver(Gui mainWindow) {
+            Printer.DebugMessage("RegisterObserver");
+            if (observingWindow == null) {
+                observingWindow = mainWindow;
+            }
         }
-    }
 
-    public static void DeregisterObserver() {
-        Printer.DebugMessage("DeregisterObserver");
-        observingWindow = null;
-    }
+        public static void DeregisterObserver() {
+            Printer.DebugMessage("DeregisterObserver");
+            observingWindow = null;
+        }
+    #endif
 
     private static void RefreshGuiList() {
-        Printer.DebugMessage("RefreshGuiList from Server List");
-        if (observingWindow != null) {
-            Printer.DebugMessage("Actually doing RefreshGuiList");
-            observingWindow.RefreshSafe();
-        }
+        #if SERVER
+            Printer.DebugMessage("RefreshGuiList from Server List");
+            if (observingWindow != null) {
+                Printer.DebugMessage("Actually doing RefreshGuiList");
+                observingWindow.RefreshSafe();
+            }
+        #endif
     }
 }

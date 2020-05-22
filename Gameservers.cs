@@ -67,7 +67,7 @@ public class Masterserver {
 	}
 
 	public static void ShowHelp() {
-		Console.WriteLine("EF Masterserver Version {0}", GetVersionString());
+		Console.WriteLine("EF Masterserver Querier Version {0}", GetVersionString());
 		Console.WriteLine();
 		Console.WriteLine("Usage:");
 		Console.WriteLine();
