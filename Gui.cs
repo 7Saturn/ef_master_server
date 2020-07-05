@@ -62,7 +62,9 @@ public class Gui : Form
         this.FormClosing += new FormClosingEventHandler(Shutdown);
 
         CenterToScreen();
-        ServerList.RegisterObserver(this);
+        #if SERVER
+            ServerList.RegisterObserver(this);
+        #endif
     }
 
     private void Shutdown (object sender, EventArgs e)
