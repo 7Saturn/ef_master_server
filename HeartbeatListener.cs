@@ -25,6 +25,8 @@ class HeartbeatListener {
     public static void StartListener(ushort listenPort = 27953)
     {
         UdpClient listener = new UdpClient((int)listenPort);
+	//Here we could extend the server by an option to tie it to a specific network interface (by providing its IP address)
+	//Right no it just listens to any, which can get problematic, if a client requests the server list and gets IPs not reachable from his end but reachable by the master server
         IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, listenPort);
         try
         {
