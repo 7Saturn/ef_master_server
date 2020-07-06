@@ -13,13 +13,14 @@ using System.Windows.Forms;
 //requires libgdiplus for running on FreeBSD
 
 public class Masterserver {
-    public const string VersionString = "0.3";
+    public const string VersionString = "0.4";
     private static bool useGui = false;
     private static Thread queryOtherMasterServersThread = null;
     private static ushort master_port = 27953;
     private static string OwnFileName = Environment.GetCommandLineArgs()[0].Replace(Directory.GetCurrentDirectory(), ".");
     private static string[] masterServerArray;
     private static int interval = 0;
+    public static String consoleHelpText;
 
     public static string getStartCommand() {
         string currentSystemType = System.Environment.OSVersion.Platform.ToString();
@@ -188,33 +189,35 @@ public class Masterserver {
     }
 
     public static void ShowHelp() {
-        Console.WriteLine("EF Masterserver Version {0}", Masterserver.GetVersionString());
-        Console.WriteLine();
-        Console.WriteLine("Usage:");
-        Console.WriteLine();
-        Console.WriteLine("{0} [--port <portnumber>] [--copy-from <serverlist> [--interval <number>]] [--verbose] [--debug] [--withgui]", getStartCommand());
-        Console.WriteLine();
-        Console.WriteLine("Switches:");
-        Console.WriteLine("--copy-from <list>   Queries other master servers for their data. Requires a");
-        Console.WriteLine("                     comma separated list of master server names or IPs.");
-        Console.WriteLine("--interval <number>  Defines, how long the time interval between master server");
-        Console.WriteLine("                     queries to other servers is in seconds. May not be less");
-        Console.WriteLine("                     than 60 (= 1 minute). Requires switch --copy-from.");
-        Console.WriteLine("                     Default is off (no repeated querying).");
-        Console.WriteLine("--port <portnumber>: Sets the listening port to the value provided, default is");
-        Console.WriteLine("                     27953. Not recommended for standard EF servers, as they");
-        Console.WriteLine("                     cannot connect to another port than the standard port.");
-        Console.WriteLine("                     Only ioQuake3 derivatives can do so.");
-        Console.WriteLine("--withgui:           Shows the currently known servers in a graphical window.");
-        Console.WriteLine("--verbose:           Shows a little more information on what is currently going");
-        Console.WriteLine("                     on.");
-        Console.WriteLine("--debug:             Shows debug messages on what is currently going on.");
-        Console.WriteLine("                     Sets --verbose switch active, too.");
-        Console.WriteLine();
-        Console.WriteLine("--help:              Prints this help and exits.");
+        Console.WriteLine(consoleHelpText);
     }
 
     public static int Main(string[] args) {
+        consoleHelpText = "EF Masterserver Version " + Masterserver.GetVersionString() + "\nUsage:\n" + getStartCommand();
+        consoleHelpText += @" [--port <portnumber>] [--copy-from <serverlist> [--interval <number>]] [--verbose] [--debug] [--withgui]
+
+Switches:
+--copy-from <list>
+Queries other master servers for their data. Requires a comma separated list of master server names or IPs.
+
+--interval <number>
+Defines, how long the time interval between master server queries to other servers is in seconds. May not be less than 60 (= 1 minute). Requires switch --copy-from. Default is off (no repeated querying).
+
+--port <portnumber>
+Sets the listening port to the value provided, default is 27953. Not recommended for standard EF servers, as they cannot connect to another port than the standard port. Only ioQuake3 derivatives can do so.
+
+--withgui
+Shows the currently known servers in a graphical window.
+
+--verbose
+Shows a little more information on what is currently going on.
+
+--debug
+Shows debug messages on what is currently going on. Sets --verbose switch active, too.
+
+--help
+Prints this help and exits.";
+
         ParseArgs(args);
         if (useGui) {
             HeartbeatListener.StartListenerThread(GetPort());

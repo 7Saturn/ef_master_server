@@ -8,6 +8,7 @@ public class Gui : Form
 {
     private ListView serverListTable;
     private StatusBox statusBox;
+    private HelpWindow helpBox;
 
     public delegate void DoRefreshFromOutside();
 
@@ -37,29 +38,41 @@ public class Gui : Form
         exit_button.Text = "Exit";
         ToolTip button_tooltip = new ToolTip(); //Can be used multiple times
 
+        Button help_button = new Button();
+        help_button.Text = "?";
+        button_tooltip.SetToolTip(help_button, "Shows some help for the masterserver (F1)");
+        help_button.Location = new Point(135, 0);
+        help_button.Width=20;
+        help_button.Parent = this;
+        BottomButton(help_button);
+		help_button.Click += new EventHandler (ShowHelp); //Event (Button_Click)
+
         Button refresh_button = new Button();
         refresh_button.Text = "Refresh";
         button_tooltip.SetToolTip(refresh_button, "Refreshes the Masterserver list from memory (F5)");
         this.Controls.Add(refresh_button);
-        refresh_button.Location = new Point(142, 375);
+        refresh_button.Location = new Point(172, 0);
         refresh_button.Parent = this;
 		refresh_button.Click += new EventHandler (Refresh); //Event (Button_Click)
+        BottomButton(refresh_button);
 
         Button status_button = new Button();
         status_button.Text = "Status";
         button_tooltip.SetToolTip(status_button, "Shows current state and settings of the masterserver (F6)");
-        status_button.Location = new Point(250, 375);
+        status_button.Location = new Point(265, 0);
         status_button.Parent = this;
 		status_button.Click += new EventHandler (ShowStatus); //Event (Button_Click)
         AcceptButton = status_button;
+        BottomButton(status_button);
 
         button_tooltip.SetToolTip(exit_button, "Closes the Masterserver (F7/ESC)");
         this.Controls.Add(exit_button);
-        exit_button.Location = new Point(359, 375);
+        exit_button.Location = new Point(359, 0);
         exit_button.Parent = this;
         CancelButton = exit_button;
 		exit_button.Click += new EventHandler (Shutdown); //Event (Button_Click)
         this.FormClosing += new FormClosingEventHandler(Shutdown);
+        BottomButton(exit_button);
 
         CenterToScreen();
         #if SERVER
@@ -71,8 +84,11 @@ public class Gui : Form
     {
         Printer.DebugMessage("Shutdown was requested.");
         if (Masterserver.GetOtherMasterServerQueryThread() != null) {
+            Printer.DebugMessage("Aborting query thread...");
             Masterserver.GetOtherMasterServerQueryThread().Abort();
+            Printer.DebugMessage("Query thread aborted.");
         }
+        Printer.DebugMessage("Exiting...");
         Environment.Exit(0);
     }
 
@@ -172,6 +188,9 @@ public class Gui : Form
         else if (!e.Control && e.KeyCode == Keys.F6) {
             ShowStatus(sender, e);
         }
+        else if (!e.Control && e.KeyCode == Keys.F1) {
+            ShowHelp(sender, e);
+        }
     }
 
 
@@ -195,6 +214,14 @@ public class Gui : Form
         this.Hide();
     }
 
+    private void ShowHelp(object sender, EventArgs e) {
+        Printer.DebugMessage("Help window was requested");
+        helpBox = new HelpWindow(this);
+        helpBox.Owner = this;
+        helpBox.Show();
+        this.Hide();
+    }
+
     private void InitalizeServerListTable (ref ListView newListView) {
         Printer.DebugMessage("InitalizeServerListTable");
         newListView.Bounds = new Rectangle(new Point(10,10), new Size(549,353));
@@ -212,6 +239,20 @@ public class Gui : Form
         // Display grid lines.
         newListView.GridLines = true;
         newListView.MultiSelect = false;
+    }
+
+    public static void CenterButton(Button button) {
+        int newX = (button.Parent.Width - button.Width) / 2;
+        Point currentLocation = button.Location;
+        currentLocation.X = newX;
+        button.Location = currentLocation;
+    }
+
+    public static void BottomButton(Button button) {
+        int newY = button.Parent.Height - button.Height - 34;
+        Point currentLocation = button.Location;
+        currentLocation.Y = newY;
+        button.Location = currentLocation;
     }
 
 }

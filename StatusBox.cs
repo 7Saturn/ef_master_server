@@ -31,10 +31,10 @@ public class StatusBox : Form
         this.origin = sourceWindow;
         Printer.DebugMessage("Creating status window...");
         this.Size = new Size(429, 335);
-        this.Text = "Status of Masterserver";
+        this.Text = "Status of EF Masterserver";
         this.FormBorderStyle = FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
-        this.ShowInTaskbar = false;
+        this.ShowInTaskbar = true;
         CenterToScreen();
 
         ToolTip button_tooltip = new ToolTip(); //Can be used multiple times
@@ -44,11 +44,12 @@ public class StatusBox : Form
         Button close_button = new Button();
         close_button.Text = "Close";
         this.Controls.Add(close_button);
-        close_button.Location = new Point(177, 285);
         close_button.Parent = this;
         CancelButton = close_button;
 		close_button.Click += new EventHandler (CloseThis); //Event (Button_Click)
         button_tooltip.SetToolTip(close_button, "Closes this window and shows server list (ESC/Enter).");
+        Gui.CenterButton(close_button);
+        Gui.BottomButton(close_button);
 
         version_label.Location = new Point(0,0);
         version_label.Height = 20;
@@ -168,7 +169,9 @@ public class StatusBox : Form
     }
 
     private void CloseThis(object sender, EventArgs e) {
+        Printer.DebugMessage("Showing main window...");
         origin.Show();
+        Printer.DebugMessage("Closing status window...");
         this.Close();
     }
 }
