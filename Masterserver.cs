@@ -240,7 +240,7 @@ Defines, how long the time interval between master server queries to other serve
 --port <portnumber>
 Sets the listening port to the value provided, default is 27953. Not recommended for standard EF servers, as they cannot connect to another port than the standard port. Only ioQuake3 derivatives can do so.
 
---interval <local IP address>
+--interface <local IP address>
 Binds the master server to a specific network interface. Requires an IPv4 address of the local network interface to be used.
 
 --withgui
