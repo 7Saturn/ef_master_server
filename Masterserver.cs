@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Linq;
 using System.Threading;
@@ -13,13 +14,15 @@ using System.Windows.Forms;
 //requires libgdiplus for running on FreeBSD
 
 public class Masterserver {
-    public const string VersionString = "0.4";
+    public const string VersionString = "0.4.1";
     private static bool useGui = false;
     private static Thread queryOtherMasterServersThread = null;
     private static ushort master_port = 27953;
     private static string OwnFileName = Environment.GetCommandLineArgs()[0].Replace(Directory.GetCurrentDirectory(), ".");
     private static string[] masterServerArray;
     private static int interval = 0;
+    private static IPAddress interfaceAddress = null;
+
     public static String consoleHelpText;
 
     public static string getStartCommand() {
@@ -62,9 +65,18 @@ public class Masterserver {
         return interval;
     }
 
+    public static string GetMasterServerListeningInterface() {
+        if (interfaceAddress == null) {
+            return "0.0.0.0 (all)";
+        }
+        else {
+            return interfaceAddress.ToString();
+        }
+    }
+
 
     private static void ParseArgs(string[] args) {
-        string[] twoPartParameters = {"--port", "--copy-from", "--interval"};
+        string[] twoPartParameters = {"--port", "--copy-from", "--interval", "--interface"};
         string[] onePartParameters = {"--help", "--debug", "--verbose", "--withgui"};
         if (args.Length == 0) {
             return;
@@ -126,6 +138,28 @@ public class Masterserver {
             }
             Printer.VerboseMessage("--port: Using port " + port + " for incoming connections.");
             master_port = (ushort)port;
+        }
+        if (args.Contains("--interface")) {
+            Printer.DebugMessage("--interface switch found");
+            int interfaceswitchposition = Array.IndexOf(args, "--interface");
+            if (interfaceswitchposition == (args.Length - 1)) {
+                Console.WriteLine("--interface switch requires a network address of the network interface to be used for listening.");
+                Environment.Exit(2);
+            }
+            string interfaceString = args[Array.IndexOf(args, "--interface") + 1];;
+            try {
+                interfaceAddress = IPAddress.Parse(interfaceString);
+                Printer.VerboseMessage("--interface: Using interface " + interfaceString + " for incoming connections.");
+            }
+            catch(FormatException e) {
+                Console.WriteLine("The provided --interface value must be a valid IPv4 address.");
+                Environment.Exit(2);
+            }
+            catch(Exception e) {
+                Console.WriteLine("Something unexpected happened:");
+                Console.WriteLine("Source : " + e.Source);
+                Console.WriteLine("Message : " + e.Message);
+            }
         }
         if (   !args.Contains("--copy-from")
             && args.Contains("--interval")) {
@@ -194,7 +228,7 @@ public class Masterserver {
 
     public static int Main(string[] args) {
         consoleHelpText = "EF Masterserver Version " + Masterserver.GetVersionString() + "\nUsage:\n" + getStartCommand();
-        consoleHelpText += @" [--port <portnumber>] [--copy-from <serverlist> [--interval <number>]] [--verbose] [--debug] [--withgui]
+        consoleHelpText += @" [--port <portnumber>] [--interface <local IP address>] [--copy-from <serverlist> [--interval <number>]] [--verbose] [--debug] [--withgui]
 
 Switches:
 --copy-from <list>
@@ -205,6 +239,9 @@ Defines, how long the time interval between master server queries to other serve
 
 --port <portnumber>
 Sets the listening port to the value provided, default is 27953. Not recommended for standard EF servers, as they cannot connect to another port than the standard port. Only ioQuake3 derivatives can do so.
+
+--interval <local IP address>
+Binds the master server to a specific network interface. Requires an IPv4 address of the local network interface to be used.
 
 --withgui
 Shows the currently known servers in a graphical window.
@@ -220,7 +257,8 @@ Prints this help and exits.";
 
         ParseArgs(args);
         if (useGui) {
-            HeartbeatListener.StartListenerThread(GetPort());
+            Printer.DebugMessage("Trying to start listener thread...");
+            HeartbeatListener.StartListenerThread(interfaceAddress, GetPort());
             try {
                 Application.EnableVisualStyles();
                 Application.Run (new Gui(VersionString));
@@ -232,7 +270,8 @@ Prints this help and exits.";
             HeartbeatListener.StopListenerThread();
         }
         else {
-            HeartbeatListener.StartListener(GetPort());
+            Printer.DebugMessage("Trying to start Listener...");
+            HeartbeatListener.StartListener(interfaceAddress, GetPort());
         }
         return 0;
     }

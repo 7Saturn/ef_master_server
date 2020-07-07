@@ -10,9 +10,9 @@ class HeartbeatListener {
 
     private static Thread listenerThreadHandle;
 
-    public static Thread StartListenerThread(ushort listenPort = 27953) {
+    public static Thread StartListenerThread(IPAddress localAddress, ushort listenPort = 27953) {
         Printer.DebugMessage("Starting listener thread.");
-        listenerThreadHandle = new Thread(() => StartListener(listenPort));
+        listenerThreadHandle = new Thread(() => StartListener(localAddress, listenPort));
         listenerThreadHandle.Start();
         return listenerThreadHandle;
     }
@@ -22,14 +22,32 @@ class HeartbeatListener {
         listenerThreadHandle.Abort();
     }
 
-    public static void StartListener(ushort listenPort = 27953)
+    public static void StartListener(IPAddress localAddress, ushort listenPort = 27953)
     {
-        UdpClient listener = new UdpClient((int)listenPort);
-	//Here we could extend the server by an option to tie it to a specific network interface (by providing its IP address)
-	//Right no it just listens to any, which can get problematic, if a client requests the server list and gets IPs not reachable from his end but reachable by the master server
-        IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, listenPort);
+        Printer.DebugMessage("StartListener");
+        if (localAddress == null) {
+            Printer.VerboseMessage("Got no interface set, listening on any available interface...");
+            localAddress = IPAddress.Any;
+        }
+        Printer.DebugMessage("before endpoint.");
+        IPEndPoint groupEP = new IPEndPoint(localAddress, listenPort);
+        Printer.DebugMessage("after endpoint.");
+        UdpClient listener = null;
+        try {
+            listener = new UdpClient(groupEP);
+        }
+        catch (SocketException e) {
+            if (e.ErrorCode == 10049) {
+                Console.WriteLine("Could not bind server to IP {0}. Are you sure, this is a proper IPv4 address of a local network interface?", localAddress);
+            }
+            else {
+                Console.WriteLine("Something unexpected happend, while trying to open local IP end point:\n" + e.ToString());
+            }
+            Environment.Exit(1);
+        }
         try
         {
+            Printer.DebugMessage("Entered main listener loop.");
             while (true)
             {
                 byte[] receivedbytes = listener.Receive(ref groupEP);

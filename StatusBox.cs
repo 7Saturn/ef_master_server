@@ -17,6 +17,8 @@ public class StatusBox : Form
     private Label debug_text = new Label();
     private Label interval_label = new Label();
     private Label interval_text = new Label();
+    private Label interface_label = new Label();
+    private Label interface_text = new Label();
     private Label MasterServerList_label = new Label();
     private TextBox masterServerList = new TextBox();
     public const int leftColumnWith = 190;
@@ -30,7 +32,7 @@ public class StatusBox : Form
 
         this.origin = sourceWindow;
         Printer.DebugMessage("Creating status window...");
-        this.Size = new Size(429, 335);
+        this.Size = new Size(429, 358);
         this.Text = "Status of EF Masterserver";
         this.FormBorderStyle = FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
@@ -67,6 +69,7 @@ public class StatusBox : Form
         version_text.Parent = this;
         button_tooltip.SetToolTip(version_text, "This is the version of this program.");
 
+
         port_label.Location = new Point(0,20);
         port_label.Height = 20;
         port_label.AutoSize = false;
@@ -82,6 +85,7 @@ public class StatusBox : Form
         port_text.Text = Masterserver.GetPort().ToString() + " (UDP)";
         port_text.Parent = this;
         button_tooltip.SetToolTip(port_text, "This is the network port the server is listening on.");
+
 
         verbose_label.Location = new Point(0,40);
         verbose_label.Height = 20;
@@ -99,6 +103,7 @@ public class StatusBox : Form
         verbose_text.Parent = this;
         button_tooltip.SetToolTip(verbose_text, "Is the console output a little more elaborate?");
 
+
         debug_label.Location = new Point(0,60);
         debug_label.Height = 20;
         debug_label.AutoSize = false;
@@ -115,7 +120,25 @@ public class StatusBox : Form
         debug_text.Parent = this;
         button_tooltip.SetToolTip(debug_text, "Is the console output very detailed?");
 
-        MasterServerList_label.Location = new Point(0,80);
+
+        interface_label.Location = new Point(0,80);
+        interface_label.Height = 20;
+        interface_label.AutoSize = false;
+        interface_label.Width = leftColumnWith;
+        interface_label.Text = "Master server listening on:";
+        interface_label.Parent = this;
+        button_tooltip.SetToolTip(interface_label, "Network interface the master server is listening on.");
+
+        interface_text.Location = new Point(leftColumnWith,80);
+        interface_text.Height = 20;
+        interface_text.AutoSize = false;
+        interface_text.Width = rightColumnWith;
+        interface_text.Text = Masterserver.GetMasterServerListeningInterface();
+        interface_text.Parent = this;
+        button_tooltip.SetToolTip(interface_text, "Network interface the master server is listening on.");
+
+
+        MasterServerList_label.Location = new Point(0,100);
         MasterServerList_label.Height = 20;
         MasterServerList_label.AutoSize = false;
         MasterServerList_label.Width = leftColumnWith;
@@ -135,7 +158,7 @@ public class StatusBox : Form
             masterServerListString = String.Join("\n", masterServerListStrings);
         }
         this.masterServerList.Text = masterServerListString;
-        this.masterServerList.Location = new Point (leftColumnWith + 1, 80);
+        this.masterServerList.Location = new Point (leftColumnWith + 1, 100);
         this.masterServerList.Width = rightColumnWith;
         this.masterServerList.Height = 178;
         this.masterServerList.AcceptsReturn = true;
@@ -145,7 +168,8 @@ public class StatusBox : Form
         button_tooltip.SetToolTip(masterServerList, "What other master servers are queried?");
         masterServerList.Parent = this;
 
-        interval_label.Location = new Point(0,260);
+
+        interval_label.Location = new Point(0,280);
         interval_label.Height = 20;
         interval_label.AutoSize = false;
         interval_label.Width = leftColumnWith;
@@ -153,7 +177,7 @@ public class StatusBox : Form
         interval_label.Parent = this;
         button_tooltip.SetToolTip(interval_label, "Interval other master servers are queried.");
 
-        interval_text.Location = new Point(leftColumnWith,260);
+        interval_text.Location = new Point(leftColumnWith,280);
         interval_text.Height = 20;
         interval_text.AutoSize = false;
         interval_text.Width = rightColumnWith;
@@ -161,11 +185,15 @@ public class StatusBox : Form
             interval_text.Text = Masterserver.GetMasterServerQueryInterval().ToString() + " Seconds";
         }
         else {
-            interval_text.Text = "Not applied (query only once at startup)";
+            if (masterServerListStrings != null && masterServerListStrings.Length != 0) {
+                interval_text.Text = "Not applied (feature not active)";
+            }
+            else {
+                interval_text.Text = "Not applied (query only once at startup)";
+            }
         }
         interval_text.Parent = this;
         button_tooltip.SetToolTip(interval_text, "Interval other master servers are queried.");
-
     }
 
     private void CloseThis(object sender, EventArgs e) {
