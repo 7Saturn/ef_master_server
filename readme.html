@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+	<title>EF Master Server 0.4.1 Documentation</title>
+    <meta name="AUTHOR" content="Martin Wohlauer">
+	<meta name="DESCRIPTION" content="Documentation of the EF Master Server">
+	<meta name="KEYWORDS" content="Star Trek Voyager Elite Force Master Server">
+	<meta http-equiv="CONTENT-TYPE" content="text/HTML; charset=utf8">
+	<meta name="language" content="en">
+	<style>
+	  code
+	  {
+		  background: #E7E7E7;
+	  }
+      body
+      {
+          max-width: 800;
+      }
+      td
+      {
+          vertical-align: top;
+          padding-right: 5px;
+      }
+      code
+      {
+          font-size: 15;
+      }
+	</style>
+  </head>
+  <body lang="en-US" dir="LTR">
+    <h1>EF Master Server 0.4.1 Documentation</h1>
+    <h2 id="contents">Contents</h2>
+    <ul>
+      <li><a href="#contents">Contents</a></li>
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#goal">Goals of This Project</a></li>
+      <li><a href="#prerequisites">Prerequisites</a></li>
+      <li><a href="#how_to_use">How to Use It?</a></li>
+      <li><a href="#known_issues">Known Issues</a></li>
+      <li><a href="#tech_details">Technical Details</a>
+        <ul>
+          <li><a href="#query_via_game_menu">How Querying Works in the Game Menu</a></li>
+          <li><a href="#announcing_server">How Announcing Works From the Game Server Side</a></li>
+          <li><a href="#protocol_details">Protocol Details</a>
+            <ul>
+              <li><a href="#sending_heartbeat">Heart Beat</a></li>
+              <li><a href="#requesting_query">Querying a Game Server's Information</a></li>
+              <li><a href="#server_info_response">Server Info Response</a></li>
+              <li><a href="#server_list_query">Server List Query</a></li>
+              <li><a href="#server_list_answer">Server List Answer</a></li>
+              <li><a href="#server_list_full_dump">Specialty of EF Master Server: Server List Full Dump</a></li>
+              <li><a href="#heartstop">Specialty of Elite Force: Heart Stop</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <h2 id="introduction">Introduction</h2>
+    <p>In 2000 the publisher Activision released Raven Software's first person shooter &raquo;Star Trek: Voyager Elite Force&laquo; (aka &raquo;EF&laquo; or &raquo;EF1&laquo;, as there is also a successor to it, &raquoStar Trek: Elite Force II&laquo;, which is not compatible by the way). It is a Quake 3 based game, which utilizes so-called master servers for online play. These servers hold the EF1 gaming community together as they are at the center of online multiplayer match look-ups. Any EF1 game server can announce itself to an EF1 master server. The master server checks for actual availability of the game server (so you cannot spam the server with false information having the server store it). Any available server announced to it stored. This list of known game servers can be queried by any EF1 game client. So essentially without such a master server, the search for open game servers via the internet comes to an end. This does not mean, online play is impossible, as you can still connect directly via providing an IP address. Also the LAN play is not affected by it, as local game servers can always be found via broadcasts inside the own local network. But online play would get very inconvenient without an available master server.</p>
+    <p>Today (2020) there are still some master servers online, one of them being an original master server from Raven Software. There are also a few others:</p>
+    <ul>
+      <li>master.stvef.org (one of the two original master servers)</li>
+      <li>efmaster.tjps.eu (Quake 3 community run)</li>
+      <li>master.stef1.daggolin.de (private server)</li>
+      <li>ipv6.tjps.eu (IPv6 server of the Quake 3 community)</li>
+    </ul>
+    <p>The formerly working server master.stef1.ravensoft.com is currently down for quite some time. This already shows, what the problem might be in the future: Nobody can guarantee, that Raven Software will run their master servers indefinitely. They have been running it for 20 years now, which is already an outstanding job. (Thanks for that! Please, please, Raven Software, carry on!) Many other studios and publishers simply put their servers offline after a few years. But the problem is still a real one: Without any master servers, the gaming experience would suffer and it stands to reason, that the second official server will be offline at some point in the future. This software project here, the &raquo;EF Master Server&laquo; tries to fill in this gap without requiring to much effort from a possible master server admin.</p>
+    <h2 id="goal">Goals of This Project</h2>
+    <p>First, the obvious goal is, to have a master server software for EF1 available. Now, one might simply program a C++ application an be done with it. Which has already been done. But that does not necessarily help in terms of availability. When the author of the EF Master Server here tried to compile it under Linux, it simply did not work out. It did not compile under Linux, there were no binaries available. So after quite some trying, he gave up. There is also another version based on VisualBasic 6, which requires Windows, or at least Wine on Linux. This one works, but requiring Wine and the VB 6 Runtime files, which feels kind of strange, running it on Linux. And on BSD or MacOS things get even more complicated.</p>
+    <p>So depending on your situation you might not want to (or are not able to) use Wine or you might have difficulties to get C++ sources to compile. Or you might just not want to have anything to do with compiling code altogether. Or maybe you do not want to run this software only under Windows, but do not want to get another version when changing the platform. So the second goal is, not requiring the user to compile anything. Third goals is having it available not only for Windows. (After all, there is a whole bunch of servers run with Linux or even BSD, so why not go native there?)</p>
+    <p>This software comes pre-compiled, working out of the box with Windows. It is also working out of the box with Linux, MacOS and BSD, provided, the Mono runtime environment and maybe a required package are installed. So worst case scenario is, installing some standard packages from the package repository of your Linux distribution and start the program using mono. That's it. It is (for its basic function) platform independent. As long as WinForms of the .NET platform can be used properly, everything will work out just fine. On MacOS this is not quite the case. The graphical user interface (GUI) cannot be used, due to incomplete implementation of WinForms in the MacOS Mono environment.</p>
+    <h2 id="prerequisites">Prerequisites</h2>
+    <p>Under Windows you will probably be capabale of running it right away, as long as the C# runtime environment is installed. This is the default for Windows 7 and newer. Under XP and Vista you might want to install it. But then again, such old Windows versions are not recommended for usage as a server in any network.</p>
+    <p>Under Linux it depends on what comes pre-installed with your distribution. Debian and Ubuntu require you to install the packages <code>mono-runtime</code> and <code>libmono-system-core4.0-cil</code>. If you want to compile it yourself, you will require the packages <code>mono-mcs</code> and <code>libmono-cil-dev</code> as well.</p>
+    <p>Suse LEAP will require the package <code>mono-core</code> to be installed for running. Compiling has not been tested, yet.</p>
+    <p>Under MacOS you will require the package <code>mono-core</code> for running. Compiling has not been tested in a while.</p>
+    <p>For FreeBSD you require the package <code>libgdiplus</code> for running it. Compiling has not been tested there.</p>
+    <h2 id="how_to_use">How to Use It?</h2>
+    <p>Actually, it is pretty simple: Just run the <code>masterserver.exe</code> under Windows, or start it with <code>mono&nbsp;masterserver.exe</code> under Linux, MacOS or BSD. It will work already, serving on any network interface, silently, in a black console window. In this fashion you can also use it as a system service under Linux. Currently the master server only serves IPv4 connections. There are however other versions than vanilla EF, which allow for IPv6 to be used. At this time, the master server is not able to provide IPv6 functionality.</p>
+    <p>If you do have certain additional needs, see the console switch documentation below:</p>
+    <table border="0" width="100%">
+      <tr>
+        <th>Switch</th><th>Effect</th>
+      </tr>
+      <tr>
+        <td><code>--port</code></td><td>Provides an override UDP port, which is used instead of the default value 27953. It is however not recommended to use this feature, as it effectively limits the master server to serve for ioQuake3 derived EF versions such as <a href="https://github.com/zturtleman/lilium-voyager">Lilium Voyager</a> or <a href="https://stvef.org/cmod.php">cMod</a>. Original EF1 has bug, that allows servers to announce themselves to the master on that port, but when querying the server list, they always use the standard port, no matter what was provided for <code>sv_master1</code> to <code>sv_master5</code> in the config file.</td>
+      </tr>
+      <tr>
+        <td><code>--interface</code></td><td>Binds the master server to the network interface with the provided IP. By default the server listens on 0.0.0.0, so all network interfaces. This might be undesired, as the master server would also send list items of possible EF game servers running in the local network, that cannot be reached from the outside. If you have only one network interface, this is of no use for you.</td>
+      </tr>
+      <tr>
+        <td><code>--copy-from</code></td><td>This switch provides a list of master server domain names or IPs, that the local instance will query first, adding their information to its own, effectively mirroring their data. This can speed up availability of the local master, when it is (re)started. The list is provided as a comma separated list, no spaces allowed.</td>
+      </tr>
+      <tr>
+        <td><code>--interval</code></td><td>This switch can only be used, if <code>--copy-from</code> is active. It defines the interval in seconds between updating own data with remote data of other master servers. The minimum value is 60 seconds. By default this option is turned off, making the master server query the other master server(s) just once, at startup time.</td>
+      </tr>
+      <tr>
+        <td><code>--withgui</code></td><td>You might want to see additional information via a GUI interface. When providing this switch, the master server starts a graphical user interface list, showing the currently known game servers, some help and also information on the start parameters used. This option does not run on MacOS! At the time of this writing (2020-07-07) the Mono runtime environment for MacOS is not implementing WinForms completely, leading to a crash on MacOS. So only CLI for MacOS...</td>
+      </tr>
+      <tr>
+        <td><code>--verbose</code></td><td>By default, the CLI output is dead silent. It only prints messages, when something goes wrong (which usually means, either the program will not start to begin with or it crashed). This helps when running it as a service, where you sometimes really don't want it to print anything. When using <code>--verbose</code>, the server tells you about itself and what is going on. But nothing more on top of that.</td>
+      </tr>
+      <tr>
+        <td><code>--debug</code></td><td>This is so to say the big brother of <code>--verbose</code>. It comments a lot on what it is actually doing. This can help to track down problems, and is (as the name suggests) mainly meant for debugging it during development.</td>
+      </tr>
+      <tr>
+        <td><code>--help</code></td><td>This switch will print a short help on the available switches and ends the program, no matter what other switches were used as well.</td>
+      </tr>
+    </table>
+    <h2 id="known_issues">Known Issues</h2>
+    <p>Here are some problems that are already known. Some of them cannot be helped (at least not at the moment). Some require further investigation.</p>
+    <p>No GUI on MacOS: When you try to use the WinForms Classes on MacOS with Mono you will find, that the EF Master Server crashes. This has nothing to do with the master server itself, as the very same functionality works like charm on Linux and FreeBSD. The Mono implementation of WinForms on MacOS seems to leave room for improvement...</p>
+    <p>Hanging When Closing: This problem is actually well known at least on Debian. The server works just fine, but if you start it with GUI and at some point try to close it (either using <code>ESC</code> key or clicking on <b>Exit</b> in the main window) it will not properly exit but freeze. The cause of this is still unknown. At this time, if this is a problem, do not use the GUI. If you stick to the console, it will work just fine. (It might be possible, that this is also a bug in the Mono runtime environment, but as was mentioned, the origin of this problem is still unclear.)</p>
+    <p>Server List Answer Varried: Apparently the <a href="#server_list_answer">Server List Answer</a> can vary, depending on the master server used. The original Raven Software master server does separate the <code>getserversResponse</code> part from the following payload only with spaces (0x20) (one to be exact). But there are problems with other master servers, that do not comply with this behavior but instead also use zero-byte delimiters (0x00). The EF Master Server sometimes has problems when receiving such answers. As the original master servers from Raven Software never showed this behavior, it is assumed to be faulty and therefore the EF Master Server will stick to the original expectations for a received server list answer.</p>
+    <p>No IPv6 Support: When Raven Software released EF in 2000, IPv6 was already specified but far from widely used. So they did not make the effort to make the game IPv6 compatible. But the Quake 3 engine was improved in the meantime. As there are/were several projects aiming at merging the new fixes and improvements from the ioQuake3 projekt into forks of it for EF, IPv6 is actually available in EF, when using these variations. So one can play EF via an IPv6 connection, and there is also a master server protocol for that occation. The EF Master Server does not yet implement this as well. As practically all currently run EF servers are using IPv4 only, this is a low priority goal, which will take some time for research and implementation. So it is not likely to happen any time soon. (If somebody else wants to get his hands dirty, be my guest!)</p>
+    <p>Server List Stored in File: There were ideas of saving the currently known servers into a local file. This file could be read during startup to give the master an ahead start. At the moment the priority is low as the alternative, querying other master servers, would provide a very similar functionality when it comes to starting up fast. Again, if somebody else find's this lack of local save <del>disturbing</del> a good enough reason to get his hands dirty, be my guest.</p>
+    <h2 id="tech_details">Technical Details</h2>
+    <p>There are some details you might want to be aware of, or interested in. This section describes how the server announcements and look-ups are technically implemented. This master server also adds onto the standard EF1 master server protocol the ability to dump the entirety of the known servers to a requesting client (see subsection <a ref="#"></a> on that topic).</p>
+    <p>First of all, it helps to know, how a player experiences the server look-ups and how a game server operator sees it. You can divide the entire protocol in two parts, the announcement (only done by game servers) and the list query (usually only done by game clients). Let's start with the view from a players perspective (the most common one).</p>
+    <h3 id="query_via_game_menu">How Querying Works in the Game Menu</h3>
+    <p>EF offers the function of querying servers via the menu path <b>Multi Match</b> &rarr; <b>Search for Server</b>. You might already be presented a list of found servers, depending on whether any are actually found and whether you currently view actual master server results, favorites or LAN servers. When using the button <b>Servers</b> you can toggle between <b>Favorites</b>, <b>Local</b> (LAN servers) and <b>Internet1</b> to <b>Internet<i>n</i></b>. Usually you will find not more than <b>Internet5</b>, depending on how many servers were set with the config variables <code>sv_master1</code> to <code>sv_master5</code>.</p>
+    <p>When refreshing the master server list provided by <b>Internet1</b> an so on, there are two possibilities: Either the server could not be reached, which makes the list take three seconds to be updated, resulting in no entries. Or the list is refreshed quicker, which usually means, the server could be reached. It is possible, due to the nature of UDP datagram communication (used throughout the entire EF game), that the request or the answer of the master is not reaching its target. In such a case you might also experience this behavior, but after hitting the <b>Refresh</b> button, the list is successfully requested.</p>
+    <p>The results still might be empty, even when the results are coming in (almost) instantly, indicating the master server did answer. Maybe you are overfiltering: You can filter the server list by <b>Game Type</b>, <b>Show Full</b> and <b>Show Empty</b>. So when the combination of filters is somehow &quot;not optimal&quot; (let's say, nobody else is playing and you are filtering out empty servers), you might end up with no servers, although there are some online and known to the master server. The maximum number of servers is shown, when using <b>Game Type All</b>, <b>Show Full Yes</b> and <b>Show Empty Yes</b>.</p>
+    <p>But even that might get you an empty list, depending on your game's version. Currently there are three different game versions of vanilla EF (unaltered, original EF as was provided by Raven Software), 0.28, 1.1 and 1.2, resulting in the three technical game versions 22, 23 and 24. Neither of those three versions can connect to servers of the other two versions. So by default, the game sends its own version to the master server, which in turn also filters for this version. So you will never end up trying to connect to a server running the wrong version as the master server only shows you technically suitable servers. (Today, version 1.2, resp. 24 are state of the art. You will probably never find any older versions running.)</p>
+    <p>In order to actually be able to use a master server, the master server has to be part of your EF configuration, namely the <code>hmconfig.cfg</code>, placed in the game folder by default. It may contain up to five master server definitions, provided in the following manner:</p>
+    <p><code>seta sv_master1&nbsp;"Domain&nbsp;or&nbsp;IP&nbsp;address:port"</code></p>
+    <p>The port definition is optional and in vanilla EF does not really work properly. You can have four other entries, which differ in the number after <code>sv_master</code>. The default servers are master.stvef.org, master.stef1.ravensoft.com and master.gamespy.com. Only the first one is still available.</p>
+    <h3 id="announcing_server">How Announcing Works From the Game Server Side</h3>
+    <p>A server operator can choose whether his server is actually listed on a master server or not. This is set by the variable <code>+seta dedicated 2</code> on the command line, when starting it up. Value <code>0</code> means, only LAN play is possible, <code>1</code> means internet play is possible, but the server is not announced to any masters while <code>2</code> also announces the game server to the master server. You can have the same results, when putting up a server via the game menu (<b>Multimatch</b> &rarr; <b>Create Server</b>) and setting <b>Dedicated Server</b> to <b>Internet</b>.<p>
+    <p>To be successfully announced, the game server also must be reachable from the internet (or to be more precise, from the master server's network). This might be problematic if you are working behind a firewall or a router's NAT. In such a case, the corresponding port forwarding or firewall whitelisting must be set. The master server tries to connect to the game server in order to check for its validity. If a game server cannot be reached from the internet, the master server drops that server and does not deliver it to the game clients.</p>
+    <p>The game server then announces itself under certain circumstances. This includes starting and stopping the server. In the latter case the server contacts the master server, announcing it and immediately after that, closes the UDP port. This essentially makes the game server invalidate itself, as the master server will recheck the availability of it, finding it offline and therefore removing it from its internal list.</p>
+    <p>As is also for the client, the <code>sv_master</code> variables will have to be set, in order for the game server to appear on any master servers.</p>
+    <h3 id="protocol_details">Protocol Details</h3>
+    <p>The Quake 3 Arena master server protocol is the basis for EF1's variation of it. In principle only the standard port differs, and the communication payload, when it comes to game names and certain cvars. Aside from that, it is pretty much the same as for Q3A. It is basically a text based communication via UDP.</p>
+    <h4 id="sending_heartbeat">Heart Beat</h4>
+    <p>Let's begin with announcing a game server to a master server. A game server announces itself with the so-called heart beat signal:</p>
+    <p><code>&#255;&#255;&#255;&#255;\heartbeat\27960\gamename\STEF1\</code></p>
+    <p>The <code>&#255;</code> introduce the message like a header. It is four times the byte with number 255 (all eight bits set). This is done pretty much for all packages, not only the hart beat signal. It continues with <code>\heartbeat</code>, declaring the datagram to be a heart beat signal. It is followed by <code>\27960</code>, which is actually the information of the game port. So it might differ. But the default game server port is 27960. This is kind of redundant, as the game server sends this information via the same port as it actually waits for outside connections. So this information is actually known to the server anyways, as it knows the source port of that datagram. The last information <code>\STEF1\</code> is the game mod running. The default mod so to say is vanilla EF which is represented by <code>STEF1</code>. This is important for players as they might not have a particular mod installed and therefore cannot connect to the game server.</p>
+    <p>This signal is sent, when the game server is first started up, when the server is stopped, when the server changes the states of &quot;is empty&quot; and &quot;is full&quot;. You can also invoke this manually by entering <code>heartbeat</code> on the servers console. On top of that, the game server also repeats its heart beat from time to time without any special cause.</p>
+    <h4 id="requesting_query">Querying a Game Server's Information</h4>
+    <p>After being contacted by a game server to be included in its list, the master server tries to verify the information by querying the game server's details:</p>
+    <p><code>&#255;&#255;&#255;&#255;getinfo xxx</code></p>
+    <p>This makes the client answer this request with some information about it. This message is also sent by clients when looking for games in the local sub net. In this case, the destination IPs is the sub net's broadcast address and the ports 27960 to 27963 are used.</p>
+    <h4 id="server_info_response">Server Info Response</h4>
+    <p>The game server answeres with a datagram of this form:</p>
+    <p><code>&#255;&#255;&#255;&#255;infoResponse &quot;Values&quot;</code></p>
+    <p><code>Values</code> is a generic representation, as it might differ in contents depending on the server. The general pattern of those values is as follows:</p>
+    <p><code>\Identifier1\Value1\Identifier2\Value2...\Identifiern\Valuen\challenge\xxx</code></p>
+    <p>So the results are a list of key-value-pairs, finished by <code>\challenge\xxx</code>. Some information is always included:</p>
+    <table border="0" width="100%">
+      <tr><th>Key</th><th>Value</th></tr>
+      <tr><td><code>game</code></td><td>Which mod is played, e.&#8239;g. standard baseEF, or also pinball.</td></tr>
+      <tr><td><code>g_needpass</code></td><td>Does the server require a password for access? 1 = yes, 0 = no.</td></tr>
+      <tr><td><code>pure</code></td><td>Value of the sv_pure variable on the server. If 1, the client is only allowed to have the same *.pk3 files as the server has.</td></tr>
+      <tr><td><code>gametype</code></td><td>Which game type is set, e.&#8239;g. 4 for CTF. Corresponds to the server variable <code>g_gametype</code>.</td></tr>
+      <tr><td><code>sv_maxclients</code></td><td>What is the maximum number of clients that can be connected? It is a digit sequence. It is used to determine the state full for the query on the master server.</td></tr>
+      <tr><td><code>g_humanplayers</code></td><td>How many human players are actually playing on the server? It is a digit sequence.</td></tr>
+      <tr><td><code>clients</code></td><td>How many players are currently on the server? Also contains the bots, unlike <code>g_humanplayers</code>. Is used to determine the state full (full) and empty (empty).</td></tr>
+      <tr><td><code>mapname</code></td><td>The technical name of the map currently being played, e.&#8239;g. hm_voy1.</td></tr>
+      <tr><td><code>hostname</code></td><td>What name was given to the server? E.&#8239;g. &quot;My nice server&quot;.</td></tr>
+      <tr><td><code>protocol</code></td><td>Which version does the game server have? For EF from 1.2 on it is <code>24</code>, but old versions also have <code>22</code> (version 0.28) or <code>23</code> (version 1.1).</td></tr>
+      <tr><td><code>gamename</code></td><td>Which game is played? For EF this is <code>EliteForce</code>.</td></tr>
+    </table>
+    <p>If a server does not respond to such a query the master server assumes it went offline and removes it from his list of known servers. Now let's continue with the other side of the coin, querying the master server by a game client.</p>
+    <h4 id="server_list_query">Server List Query</h4>
+    <p>By default, a game client will only query master servers set in its configuration file. The result of that query depends of course on the list of game servers currently known by the master server but also on a matching game version and the states &quot;is full&quot; and &quot;is empty&quot;. The query datagram looks like this:</p>
+    <p><code>&#255;&#255;&#255;&#255;getservers xx</code></p>
+    <p>The <code>xx</code> provides the master server with the information, which versions of game the client will want to receive. As described above, that can by a number of the range 22 to 24. The above mentioned query will get only not full and not empty servers of the provided version. As was stated earlier, the game client can limit its query to only a certain kind of servers, e.&#8239;g. no full ones or no empty ones. This information is optional in the datagram and can be represented like this:</p>
+    <p><code>&#255;&#255;&#255;&#255;getservers xx empty full</code></p>
+    <p>This example will get also empty servers and also full servers from the master server.</p>
+    <h4 id="server_list_answer">Server List Answer</h4>
+    <p>Now that the request was sent, the answer will look somewhat like this:</p>
+    <p><code>&#255;&#255;&#255;&#255;getserversResponse \addressport1\addressport2\…\addressportn\EOT</code></p>
+    <p>This list can either be totally empty (e. g. no servers of that version found), which would get the result <code>&#255;&#255;&#255;&#255;getserversResponse \EOT</code>. But it might also contain 1 to n servers, separated by a <code>\</code>. Every server is depicted in such a fashion:</p>
+    <p><code>\c0a900016d38</code></p>
+    <p>The first eight characters after the <code>\</code> are the hex representation of the servers IPs. It is a group for four numbers, each being 2 digits long, representing a section between the dots of an IPv4 address in the same order as they would be written in decimal-dot-representation. So the example <code>c0a90001</code> translates to 192.168.0.1. The latter four bytes are the port in hex representation, low-endian. So the <code>6d38</code> represents the standard port 27960. In this fashion, the master server delivers only fitting game servers, including their full/empty-state and the proper game version. So essentially not all servers are delivered, only the ones asked for. Any other filtering (e. g. game type) will have to happen on the client's side.</p>
+    <h4 id="server_list_full_dump">Specialty of EF Master Server: Server List Full Dump</h4>
+    <p>The EF Master Server is capable of querying other master servers for their information for the purpose of mirroring them. There are essentially two possible ways of how to approach this task: Either query for any version with all servers included (full empty), requiring at least three requests per queried server (versions 22 to 24). Or &ndash; if the master server provides it &ndash; request a full dump. The latter is a lot less complicated and also a bit more robust, when it comes to newer versions. Imagine there would be version 25 released. The 22 to 24 approach would miss this. This is the reason why for this project a non-standard query was implemented, asking a master server to send a full dump, and in turn, also answering such full dump requests appropriately. The advantage is, that older master servers, not providing this functionality will only discard the request. This allows for a fallback mode where the known versions are queried one by one, as is standard (so backwards compatibility is provided). But if the other master server understands the request, the transmission of the known master servers can be done by one request alone, speeding up the process and not leaving any unknown versions out. In principle the approach is almost the same as is for ordinary version-filtered queries but the query datagram looks like this:</p>
+    <p><code>&#255;&#255;&#255;&#255;getallservers </code></p>
+    <p>This in turn will lead to an ordinary server list, as would be expected by the ordinary server list query, but this time without any filtering. The entire list, regardless of version of full/empty state will be transmitted. So afterwards the querying can be stopped, as all information is available to the requesting master server. This allows master servers to monitor each other. So when all master servers know each other, one failing is only a problem to a game server or client, that has only this particular master server set. If there are multiple servers mirroring each other and also serving as normal master servers, they will propagate the information though the entire master server net, so essentially it is not necessary for all clients and servers to actually know all the master servers in order to get the entire information of available servers. Only the master servers will have to know each other.</p>
+    <p>As a precaution, the EF Master Server will recheck the results of the other master servers, just to be sure the data is not outdated. This is also done in regular time intervals of ten minutes on the known servers. So if by any chance a server is going offline without signaling the master server (e.&#8239;g. due to a crash) the master server will detect this after ten minutes tops, and remove it from the list of known servers.</p>
+    <h4 id="heartstop">Specialty of Elite Force: Heart Stop</h4>
+    <p>There is another special package, that is not part of the original Quake 3 Arena master server protocol, the so-called heart stop signal:</p>
+    <p><code>&#255;&#255;&#255;&#255;heartstop\27960\gamename\STEF1\</code></p>
+    <p>Apparently it is meant to work very similar to the heart beat signal, but (probably) is meant to signal a master server to remove it from its list. This is EF specific and, as was described for the heart beat signal, actually unnecessary. A game server can always see to its own invalidation by sending one last heart beat to the master server and then closing the connection, effectively removing itself from the master server. So it stands to reason that the master servers run by Raven Software understand this additional signal, but it was never required to begin with.</p>
+  </body>
+</html>

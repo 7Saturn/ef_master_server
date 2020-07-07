@@ -16,4 +16,5 @@ Server Entries stored in file, if a file name is provided. Interesting methods:
     string text = File.ReadAllText(@"c:\file.txt", Encoding.UTF8);
     boolean is_there = File.Exists(@"c:\temp\test.txt");
     File.WriteAllText(@"c:\temp\MyTest.txt", textString);
-Refactoring, Parser should work stand alone (not tied in so much with the application)
+
+ServerList should be locked during adding/deleting servers to/from the list (threaded...).
