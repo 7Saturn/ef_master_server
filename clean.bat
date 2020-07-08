@@ -1,1 +1,1 @@
-del masterserver.exe gameservers.exe
+del masterserver.exe masterserver.zip gameservers.exe
