@@ -22,8 +22,7 @@ class HeartbeatListener {
         listenerThreadHandle.Abort();
     }
 
-    public static void StartListener(IPAddress localAddress, ushort listenPort = 27953)
-    {
+    public static void StartListener(IPAddress localAddress, ushort listenPort = 27953) {
         Printer.DebugMessage("StartListener");
         if (localAddress == null) {
             Printer.VerboseMessage("Got no interface set, listening on any available interface...");
@@ -94,7 +93,7 @@ class HeartbeatListener {
                     listener.Send(query, query.Length, groupEP);
 
                 }
-                else if (IsDumpRequest(receivedbytes)) {//not standard issue. Original EF did never know/support this, but it makes querying other masters for the purpose of running am master yourself a lot easier/faster
+                else if (IsDumpRequest(receivedbytes)) {//not standard issue. Original EF did never know/support this, but it makes querying other masters for the purpose of running a master yourself a lot easier/faster
                     Printer.DebugMessage("---- Received server dump query request from " + groupEP + " ----");
                     ServerList.Cleanup();
                     byte[] getserversResponse = QueryStrings.GetArray("server_list_response_head_space");

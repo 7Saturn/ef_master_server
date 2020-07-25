@@ -185,6 +185,6 @@
     <h4 id="heartstop">Specialty of Elite Force: Heart Stop</h4>
     <p>There is another special package, that is not part of the original Quake 3 Arena master server protocol, the so-called heart stop signal:</p>
     <p><code>&#255;&#255;&#255;&#255;heartstop\27960\gamename\STEF1\</code></p>
-    <p>Apparently it is meant to work very similar to the heart beat signal, but (probably) is meant to signal a master server to remove it from its list. This is EF specific and, as was described for the heart beat signal, actually unnecessary. A game server can always see to its own invalidation by sending one last heart beat to the master server and then closing the connection, effectively removing itself from the master server. So it stands to reason that the master servers run by Raven Software understand this additional signal, but it was never required to begin with.</p>
+    <p>Apparently it is meant to work very similar to the heart beat signal, but (probably) is meant to signal a master server to remove it from its list. This is EF specific and, as was described for the heart beat signal, actually unnecessary. Therefore it is not implemented. A game server can always see to its own invalidation by sending one last heart beat to the master server and then closing the connection, effectively removing itself from the master server. So it stands to reason that the master servers run by Raven Software understands this additional signal, but it was never required to begin with.</p>
   </body>
 </html>

@@ -159,7 +159,7 @@ public static class ServerList {
             return;
         }
         Byte[] start = receiveBytes.Take(server_list_answer_head.Length).ToArray();
-        Byte[]  ende = receiveBytes.Skip(server_list_answer_head.Length + 1).ToArray();
+        Byte[]   end = receiveBytes.Skip(server_list_answer_head.Length + 1).ToArray();
         Byte[]  tail = receiveBytes.Skip(receiveBytes.Length-eot.Length).ToArray();
         Byte[]  data = receiveBytes.Skip(server_list_answer_head.Length + 1).ToArray();
         data = data.Take(data.Length-eot.Length).ToArray();
@@ -180,7 +180,7 @@ public static class ServerList {
                         Printer.DebugMessage(adresse + " was received");
                     }
                 }
-                if (ende.SequenceEqual(eot)) {
+                if (end.SequenceEqual(eot)) {
                     Printer.DebugMessage("But no servers were sent back.");
                 }
                 else {
@@ -204,8 +204,8 @@ public static class ServerList {
                 Printer.DumpBytes(start);
                 Console.WriteLine("server_list_answer_head:");
                 Printer.DumpBytes(server_list_answer_head);
-                Console.WriteLine("ende:");
-                Printer.DumpBytes(ende);
+                Console.WriteLine("end:");
+                Printer.DumpBytes(end);
                 Console.WriteLine("tail:");
                 Printer.DumpBytes(tail);
                 Console.WriteLine("eot:");
@@ -297,7 +297,7 @@ public static class ServerList {
 
     private static void CleanupThread() {
         while (true) {
-            System.Threading.Thread.Sleep(600000); //Sleep first. Do NOT(!) do it the other way around. If you do this to fast, it might crash on slow or heavily loaded machines, as the list may not exist at first. Once every ten minutes should suffice.
+            System.Threading.Thread.Sleep(600000); //Sleep first. Do NOT(!) do it the other way around. If you do this to early, it might crash on slow or heavily loaded machines, as the list may not exist at first. Once every ten minutes should suffice.
             ServerList.Cleanup();
         }
     }
