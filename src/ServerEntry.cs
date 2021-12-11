@@ -214,14 +214,14 @@ public class ServerEntry : IEquatable<ServerEntry>{
                 int clients_n = int.Parse(clients);
                 int sv_maxclients_n = int.Parse(sv_maxclients);
                 if (clients_n == 0) {
-                    Printer.DebugMessage("Found Server zu be empty.");
+                    Printer.DebugMessage("Found Server to be empty.");
                     this.empty = true;
                 }
                 else {
                     this.empty = false;
                 }
                 if (clients_n.Equals(sv_maxclients_n)) {
-                    Printer.DebugMessage("Found Server zu be full.");
+                    Printer.DebugMessage("Found Server to be full.");
                     this.full = true;
                 }
                 else {
