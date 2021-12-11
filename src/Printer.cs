@@ -38,8 +38,8 @@ public class Printer {
     }
 
     public static void DumpBytes(byte[] receiveBytes) {
-        foreach (byte zeichen in receiveBytes) {
-            Console.WriteLine("{0} {1}",(int)zeichen,(char)zeichen);
+        foreach (byte character in receiveBytes) {
+            Console.WriteLine("{0} {1}",(int)character,(char)character);
         }
     }
 

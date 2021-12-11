@@ -31,7 +31,7 @@ public class HelpWindow : Form
         this.Controls.Add(close_button);
         close_button.Parent = this;
         CancelButton = close_button;
-		close_button.Click += new EventHandler (CloseThis);
+        close_button.Click += new EventHandler (CloseThis);
         button_tooltip.SetToolTip(close_button, "Closes this window and shows server list (ESC/Enter).");
         Gui.CenterButton(close_button);
         Gui.BottomButton(close_button);
@@ -61,10 +61,9 @@ This program sets up a master server for the game »Star Trek: Voyager Elite For
  * You may alter the source code at your own discretion. If you do so, you are not allowed to remove the information of the original author and his copy right declaration. But you are encouraged to add your own name if you contributed to the project.";
         string currentSystemType = System.Environment.OSVersion.Platform.ToString();
         if (currentSystemType.Equals("Win32NT")) {
-	  helpContent = Regex.Replace (helpContent, "\n", "\r\n");
-	  Printer.DumpStringAsBytes(helpContent);
-	}
-	helpText.Text = helpContent;
+            helpContent = Regex.Replace (helpContent, "\n", "\r\n");
+        }
+        helpText.Text = helpContent;
         helpText.Parent = this;
         button_tooltip.SetToolTip(helpText, "Some explanations about this tool.");
     }
