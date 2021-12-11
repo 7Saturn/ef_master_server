@@ -1,5 +1,4 @@
 ﻿Known problems:
-
 server_list_response_head may lack spaces at its tail and may be separated by 0x00 --> look for first occurance of »\«?
 QueryStrings.mapping may be redone as an enumeration
 IPv6 is not supported although ioQuake3 based EF binaries do support IPv6
@@ -18,3 +17,4 @@ Server Entries stored in file, if a file name is provided. Interesting methods:
     File.WriteAllText(@"c:\temp\MyTest.txt", textString);
 
 ServerList should be locked during adding/deleting servers to/from the list (threaded...).
+Compiling might use -target:winexe to get it to not use a CMD Window under Windows.
