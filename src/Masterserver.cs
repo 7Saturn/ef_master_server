@@ -151,7 +151,7 @@ public class Masterserver {
                 interfaceAddress = IPAddress.Parse(interfaceString);
                 Printer.VerboseMessage("--interface: Using interface " + interfaceString + " for incoming connections.");
             }
-            catch(FormatException e) {
+            catch(FormatException) {
                 Console.WriteLine("The provided --interface value must be a valid IPv4 address.");
                 Environment.Exit(2);
             }
@@ -263,7 +263,7 @@ Prints this help and exits.";
                 Application.EnableVisualStyles();
                 Application.Run (new Gui(VersionString));
             }
-            catch (TypeInitializationException e) {
+            catch (TypeInitializationException) {
                 Console.WriteLine("I got a 'TypeInitializationException' here. Usually that means you tried to use the GUI feature without actually having an X-server started. I cannot do that.");
                 Environment.Exit(1);
             }
