@@ -109,8 +109,6 @@ ServerList should be locked during adding/deleting servers to/from the list (thr
 The bulk of Masterserver.cs could be streamlined with ConsoleParameters library.
 ==== Unittests ====
 Some unit tests might help checking everything out.
-==== Compiling ====
-A compile batch file or Windows would be nice.
 ===== New Features =====
 ==== IPv6 Support ====
 IPv6 is not supported although ioQuake3 based EF binaries do support IPv6
