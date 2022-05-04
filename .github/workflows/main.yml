@@ -46,7 +46,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const fs = require('fs').promises;
-          for ( let filename of await fs.readdir('${{github.workspace}}/build/') )
+          for ( let filename of await fs.readdir('${{github.workspace}}/../build/') )
           {
             if ( filename.endsWith('.zip') )
             {
@@ -56,7 +56,7 @@ jobs:
                   repo: context.repo.repo,
                   release_id: ${{ github.event.release.id }},
                   name: filename,
-                  data: await fs.readFile( "${{github.workspace}}/build/" + filename )
+                  data: await fs.readFile( "${{github.workspace}}/../build/" + filename )
                 }
               );
             }
