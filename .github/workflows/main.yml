@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: actions
+  pull_request:
+    branches: actions
+  release:
+    types: [created]
+
+jobs:
+  linux:
+    name: Build ${{ matrix.platform }} ${{ matrix.arch }}, ${{ matrix.build_type }}
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        fetch-depth: 0
+    - name: Update system
+      run: |
+        sudo apt-get update
+        sudo apt-get update
+        sudo apt-get upgrade -y
+        sudo apt-get dist-upgrade -y
+    - name: Install dependencies (x86)
+      run: |
+        sudo apt install apt-transport-https dirmngr
+        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+        echo "deb https://download.mono-project.com/repo/ubuntu focal main" | sudo tee /etc/apt/sources.list.d/mono-official-vs.list
+        sudo apt-get update
+        sudo apt-get install -y mono-complete
+    - name: Build
+      shell: bash
+      run: make
+    - uses: 'actions/upload-artifact@v2'
+      with:
+        name: Release
+        path: |
+          ${{github.workspace}}/build/ef_masterserver.zip
+    - name: Upload Release
+      uses: actions/github-script@v4
+      if: ${{ github.event_name == 'release' }}
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs').promises;
+          for ( let filename of await fs.readdir('${{github.workspace}}/build/') )
+          {
+            if ( filename.endsWith('.zip') )
+            {
+              await github.repos.uploadReleaseAsset(
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: ${{ github.event.release.id }},
+                  name: filename,
+                  data: await fs.readFile( "${{github.workspace}}/build/" + filename )
+                }
+              );
+            }
+          }
