@@ -11,7 +11,7 @@ on:
 
 jobs:
   linux:
-    permissions: write-all
+    permissions: read-all
     name: Build ${{ matrix.platform }} ${{ matrix.arch }}, ${{ matrix.build_type }}
     runs-on: ubuntu-20.04
     steps:
