@@ -24,13 +24,13 @@ else
 ef_masterserver.exe : src/Masterserver.cs src/Exceptions.cs src/HeartbeatListener.cs src/HelpWindow.cs src/QueryStrings.cs src/ServerEntry.cs src/ServerList.cs src/Parser.cs src/NetworkBasics.cs src/Player.cs src/Gui.cs src/StatusBox.cs src/Printer.cs graphics/ef_logo_256.ico
 	mkdir -p build
 	mkdir -p build/graphics
-	mcs -out:build/ef_masterserver.exe src/Masterserver.cs src/Exceptions.cs src/HeartbeatListener.cs src/HelpWindow.cs src/QueryStrings.cs src/ServerEntry.cs src/ServerList.cs src/Parser.cs src/NetworkBasics.cs src/Player.cs src/Gui.cs src/StatusBox.cs src/Printer.cs "-pkg:dotnet" "-define:SERVER" "-lib:/usr/lib/mono/2.0" -win32icon:graphics/ef_logo_256.ico
+	mcs -out:build/ef_masterserver.exe src/Masterserver.cs src/Exceptions.cs src/HeartbeatListener.cs src/HelpWindow.cs src/QueryStrings.cs src/ServerEntry.cs src/ServerList.cs src/Parser.cs src/NetworkBasics.cs src/Player.cs src/Gui.cs src/StatusBox.cs src/Printer.cs "-pkg:dotnet" "-define:SERVER" "-lib:/usr/lib/mono/4.8-api" -win32icon:graphics/ef_logo_256.ico
 	cp graphics/ef_logo_48.ico build/graphics/
 	cp readme.html build/
 gameservers.exe : src/Gameservers.cs src/Exceptions.cs src/QueryStrings.cs src/ServerEntry.cs src/ServerList.cs src/Parser.cs src/NetworkBasics.cs src/Player.cs src/Printer.cs graphics/ef_logo_256.ico
 	mkdir -p build
 	mkdir -p build/graphics
-	mcs -out:build/gameservers.exe src/Gameservers.cs src/Exceptions.cs src/QueryStrings.cs src/ServerEntry.cs src/ServerList.cs src/Parser.cs src/NetworkBasics.cs src/Player.cs src/Printer.cs "-pkg:dotnet" "-lib:/usr/lib/mono/2.0" -win32icon:graphics/ef_logo_256.ico
+	mcs -out:build/gameservers.exe src/Gameservers.cs src/Exceptions.cs src/QueryStrings.cs src/ServerEntry.cs src/ServerList.cs src/Parser.cs src/NetworkBasics.cs src/Player.cs src/Printer.cs "-pkg:dotnet" "-lib:/usr/lib/mono/4.8-api" -win32icon:graphics/ef_logo_256.ico
 	cp graphics/ef_logo_48.ico build/graphics/
 	cp readme.html build/
 clean:
