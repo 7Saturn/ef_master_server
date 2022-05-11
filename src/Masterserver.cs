@@ -14,7 +14,7 @@ using System.Windows.Forms;
 //requires libgdiplus for running on FreeBSD
 
 public class Masterserver {
-    public const string VersionString = "0.4.1";
+    public const string VersionString = "0.4.2";
     private static bool useGui = false;
     private static Thread queryOtherMasterServersThread = null;
     private static ushort master_port = 27953;
@@ -227,7 +227,19 @@ public class Masterserver {
     }
 
     public static int Main(string[] args) {
-        consoleHelpText = "EF Masterserver Version " + Masterserver.GetVersionString() + "\nUsage:\n" + getStartCommand();
+        consoleHelpText = "EF Masterserver Version " + Masterserver.GetVersionString();
+        consoleHelpText += @"
+Copyright (C) 2022  Martin Wohlauer
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Usage:
+
+" + getStartCommand();
         consoleHelpText += @" [--port <portnumber>] [--interface <local IP address>] [--copy-from <serverlist> [--interval <number>]] [--verbose] [--debug] [--withgui]
 
 Switches:
