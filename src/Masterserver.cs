@@ -389,26 +389,23 @@ public class Masterserver {
 
     private static void SetConsoleHelpText() {
         consoleHelpText = "EF Masterserver Version "
-                          + Masterserver.GetVersionString()
-                          + "\nUsage:\n" + getStartCommand();
-        consoleHelpText += " [--v6mode]"
-                           + " [--port <portnumber>]"
-                           + " [--portv6 <portnumber>]"
-                           + " [--interfacev4 <local IPv4 address>]"
-                           + " [--interfacev6 <local IPv6 address>]"
-                           + " [--copy-from <serverlist>"
-                           + " [--interval <number>]"
-                           + " [--withgui]"
-                           + " [--verbose]"
-                           + " [--debug]"
-                           + @"
+                          + Masterserver.GetVersionString();
+        consoleHelpText += @"
+Copyright (C) 2025  Martin Wohlauer
 
-Switches:
---copy-from <list>
-Queries other master servers for their data. Requires a comma separated list of master server names or IPs.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
---interval <number>
-Defines, how long the time interval between master server queries to other servers is in seconds. May not be less than 60 (= 1 minute). Requires switch --copy-from. Default is off (no repeated querying).
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Usage:
+
+" + getStartCommand() + @" [--v6mode] [--port <portnumber>] [--portv6 <portnumber>] [--interfacev4 <local IPv4 address>] [--interfacev6 <local IPv6 address>] [--copy-from <serverlist> [--interval <number>] [--withgui] [--verbose] [--debug]
+
+Options:
+--v6mode
+By default the Master Server only works on IPv4 networks. This switch activates the IPv6 capabilities as well.
 
 --port <portnumber>
 Sets the listening UDPv4 port to the value provided, default is 27953. Not recommended for standard EF servers, as they cannot connect to another port than the standard port. Only ioQuake3 derivatives can do so.
@@ -421,6 +418,12 @@ Binds the master server to a specific network interface. Requires an IPv4 addres
 
 --interfacev6 <local IPv6 address>
 Binds the master server to a specific network interface. Requires an IPv6 address of the local network interface to be used. This parameter can only be used, if --v6mode is also used.
+
+--copy-from <list>
+Queries other master servers for their data. Requires a comma separated list of master server names or IPs.
+
+--interval <number>
+Defines, how long the time interval between master server queries to other servers is in seconds. May not be less than 60 (= 1 minute). Requires switch --copy-from. Default is off (no repeated querying).
 
 --withgui
 Shows the currently known servers in a graphical window.
