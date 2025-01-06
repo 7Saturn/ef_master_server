@@ -20,21 +20,19 @@ public class Printer {
         return verboseActive;
     }
 
-    public static void DebugMessage (string debugmessage) {
+    public static void DebugMessage(string debugmessage) {
         if (debugActive) {Console.WriteLine(" debug: {0}", debugmessage);}
     }
 
-    public static void VerboseMessage (string message) {
-        if (verboseActive) {Console.WriteLine(message);}
+    public static void VerboseMessage(string message) {
+        if (verboseActive) {Console.WriteLine("verbose: {0}", message);}
     }
 
     public static void DumpDictionary(Dictionary <string,string> hash) {
         Printer.DebugMessage("DumpDictionary");
-        foreach (KeyValuePair<string, string> item in hash)
-        {
+        foreach (KeyValuePair<string, string> item in hash) {
             Console.WriteLine("'{0}' => '{1}'", item.Key, item.Value);
         }
-
     }
 
     public static void DumpBytes(byte[] receiveBytes) {

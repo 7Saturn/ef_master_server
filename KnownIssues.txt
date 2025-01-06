@@ -95,31 +95,23 @@ Memory around native instruction pointer (0xb6e5c5b0):0xb6e5c5a0  bc ff ff ea 98
 	  at Masterserver:Main <0x0012b>
 	  at <Module>:runtime_invoke_int_object <0x0012b>
 =================================================================
-==== Parsing Problems ====
-server_list_response_head may lack spaces at its tail and may be separated by 0x00 --> look for first occurance of »\«?
+
+It is very likely, that the culprit is mono itself, judging from this thread here:
+
+https://forums.raspberrypi.com/viewtopic.php?t=11634&start=200
+
 ===== Refactoring =====
-==== QueryStrings ====
-QueryStrings.mapping may be redone as an enumeration
 ==== Key-Value-Pairs ====
 ServerEntry.QueryInfo(): //the entire block should be rewritten so that queries only return the data blocks with key-value pairs.
                          //Server details are currently not requested, but might be
-==== Server List Lock ====
-ServerList should be locked during adding/deleting servers to/from the list (threaded...).
 ==== Parameter Parsing ====
 The bulk of Masterserver.cs could be streamlined with ConsoleParameters library.
 ==== Unittests ====
 Some unit tests might help checking everything out.
 ===== New Features =====
-==== IPv6 Support ====
-IPv6 is not supported although ioQuake3 based EF binaries do support IPv6
-    socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-    socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
-    socket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1234));
-    var udpClient = new UdpClient();
-    udpClient.Client = socket;
-    ... (use udpClient)
 ==== Save Servers On Shutdown ====
 Server Entries stored in file, if a file name is provided. Interesting methods:
     string text = File.ReadAllText(@"c:\file.txt", Encoding.UTF8);
     boolean is_there = File.Exists(@"c:\temp\test.txt");
+
     File.WriteAllText(@"c:\temp\MyTest.txt", textString);

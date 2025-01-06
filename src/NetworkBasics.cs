@@ -1,76 +1,142 @@
-using System.Net.Sockets;
-using System.Net;
 using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Collections.Generic;
 
 public static class NetworkBasics {
 
-	public readonly static int timeoutms = 500;
+    private readonly static int timeoutms = 500;
 
-	public static UdpClient NewLocalClient (int start_port = 27960, int end_port = 65535) {
-		UdpClient udpClient = null;
-        while (start_port <= end_port && udpClient == null) {
-			try {
-				udpClient = new UdpClient(start_port);
-			}
-			catch (SocketException e) {
-				if (e.ErrorCode == 10048) {//Port is already in use
-					start_port++;
-				} else {
-					throw new CannotOpenUDPPortException();
-				}
-			}
-		}
-		if (udpClient == null) {
-			throw new CannotOpenUDPPortException();
-		}
-		return udpClient;
-	}
+    public static UdpClient NewLocalServer(IPEndPoint localIPEndpoint) {
+        UdpClient listener = null;
+        try {
+            listener = new UdpClient(localIPEndpoint);
+        }
+        catch (SocketException e) {
+            if (e.ErrorCode == 10048) { // WSAEADDRINUSE
+                Console.Error.WriteLine("Could not bind server to IP {0} and"
+                                        + " port {1}. Are you sure, this is a"
+                                        + " proper IP address of a local"
+                                        + " network interface and the port is"
+                                        + " still unused?",
+                                        localIPEndpoint.Address,
+                                        localIPEndpoint.Port);
+            }
+            else if (e.ErrorCode == 10049) { // WSAEADDRNOTAVAIL
+                Console.Error.WriteLine("Could not bind server to IP {0}. Are"
+                                        + " you sure, this is a proper IP"
+                                        + " address of a local network"
+                                        + " interface?",
+                                        localIPEndpoint.Address);
+            }
+            else {
+                Console.Error.WriteLine("Something unexpected happend, while"
+                                        + " trying to open local IP end point:"
+                                        + "\n" + e.ToString());
+                Console.Error.WriteLine("Error-Code: " + e.ErrorCode);
+            }
+            Environment.Exit(1);
+        }
+        return listener;
+    }
 
-    public static byte[] GetAnswer(IPAddress destination_ip, int destination_port, byte[] sendBytes) {
+    public static UdpClient NewLocalClient(AddressFamily protocolFamily,
+                                           int startPort = 27960,
+                                           int endPort = 65535) {
+        /* Why 27960? That's the standard port EF uses as well,
+           for clients and servers. */
+        Printer.DebugMessage("Creating NewLocalClient...");
         UdpClient udpClient = null;
-        try{
-            udpClient = NetworkBasics.NewLocalClient();
+        while (startPort <= endPort && udpClient == null) {
+            try {
+                udpClient = new UdpClient(startPort, protocolFamily);
+            }
+            catch (SocketException e) {
+                if (e.ErrorCode == 10048) {//Port is already in use
+                    startPort++;
+                }
+                else {
+                    throw new CannotOpenUDPPortException("Could not open a UDP"
+                                                         + " port for protocol "
+                                                         + protocolFamily);
+                }
+            }
+        }
+        if (udpClient == null) {
+            throw new CannotOpenUDPPortException("Could not open a UDP port for"
+                                                 + " protocol "
+                                                 + protocolFamily);
+        }
+        Printer.DebugMessage("New local client is listening on port "
+                             + startPort);
+        return udpClient;
+    }
+
+    public static byte[] GetAnswer(IPAddress destinationIp,
+                                   int destinationPort,
+                                   byte[] sendBytes) {
+        string displayIP = destinationIp.ToString();
+        if (IsIPv6Address(destinationIp)) {
+            displayIP = "[" + displayIP + "]";
+        }
+
+        if (IsIPv6Address(destinationIp)) {
+            Printer.DebugMessage("Trying to open v6 socket...");
+        }
+        if (IsIPv4Address(destinationIp)) {
+            Printer.DebugMessage("Trying to open v4 socket...");
+        }
+        UdpClient udpClient = null;
+        try {
+            udpClient = NetworkBasics.NewLocalClient(
+                destinationIp.AddressFamily);
         }
         catch (Exception e) {
-            Console.WriteLine("Could not get an open connection to destination game server {0}:{1}.", destination_ip, destination_port);
-			Console.WriteLine(e.Message);
+            Console.WriteLine("Could not get an open connection to destination"
+                              + " game server {0}:{1}.",
+                              destinationIp, destinationPort);
+            Console.WriteLine(e.Message);
             return null;
         }
-		try{
-			udpClient.Connect(destination_ip, destination_port);
-			Printer.DebugMessage("Got connected to " + destination_ip + ":" + destination_port);
-			Printer.DebugMessage("Sending...");
+        try {
+            udpClient.Connect(destinationIp, destinationPort);
+            Printer.DebugMessage("Got connected to " + displayIP + ":"
+                                 + destinationPort);
+            Printer.DebugMessage("Sending...");
             udpClient.Send(sendBytes, sendBytes.Length);
 
-			Printer.DebugMessage("Waiting for response from " + destination_ip + ":" + destination_port + " for " + NetworkBasics.timeoutms + "ms...");
-            IPEndPoint RemoteIpEndPoint = new IPEndPoint(destination_ip, destination_port);
+            Printer.DebugMessage("Waiting for response from " + displayIP + ":"
+                                 + destinationPort + " for "
+                                 + NetworkBasics.timeoutms + "ms...");
+            IPEndPoint RemoteIpEndPoint = new IPEndPoint(destinationIp,
+                                                         destinationPort);
             Printer.DebugMessage("Endpoint active...");
-            // Won't block the entire program when receiving nothing, but requires a reasonable timeout value
-			var asyncResult = udpClient.BeginReceive(null, null);
+            /* Won't block the entire program when receiving nothing, but
+               requires a reasonable timeout value */
+            var asyncResult = udpClient.BeginReceive(null, null);
             Printer.DebugMessage("Beginning receiving.");
-			asyncResult.AsyncWaitHandle.WaitOne(NetworkBasics.timeoutms);
+            asyncResult.AsyncWaitHandle.WaitOne(NetworkBasics.timeoutms);
             Printer.DebugMessage("Handle active...");
-			byte[] receiveBytes = null;
-			if (asyncResult.IsCompleted)
-			{
-				try
-				{
-					receiveBytes = udpClient.EndReceive(asyncResult, ref RemoteIpEndPoint);
+            byte[] receiveBytes = null;
+            if (asyncResult.IsCompleted) {
+                try {
+                    receiveBytes = udpClient.EndReceive(asyncResult,
+                                                        ref RemoteIpEndPoint);
                     Printer.DebugMessage("Received!");
-				}
-				catch (Exception ex)
-				{
-                    Printer.DebugMessage("catching " + ex.Message + " for " + destination_ip + ":" + destination_port);
-					udpClient.Close();
-					return null;
-				}
-			}
-			udpClient.Close();
-			if (receiveBytes == null) {
-				Printer.DebugMessage("Nothing ever came from " + destination_ip + ":" + destination_port + ".");
-				return null;
-			}
+                }
+                catch (Exception ex) {
+                    Printer.DebugMessage("catching " + ex.Message + " for "
+                                         + displayIP + ":" + destinationPort);
+                    udpClient.Close();
+                    return null;
+                }
+            }
+            udpClient.Close();
+            if (receiveBytes == null) {
+                Printer.DebugMessage("Nothing ever came from " + displayIP + ":"
+                                     + destinationPort + ".");
+                return null;
+            }
             while (   receiveBytes.Length > 0
                    && receiveBytes[receiveBytes.Length-1] == 0) {
                 Printer.DebugMessage("Trimming tailing zero byte.");
@@ -79,46 +145,105 @@ public static class NetworkBasics {
             return receiveBytes;
         }
         catch (Exception e) {
-            Console.WriteLine("Could not get data from destination host {0}:{1}.", destination_ip, destination_port);
-			Console.WriteLine(e.Message);
+            Console.WriteLine("Could not get data from destination host"
+                              + " {0}:{1}.",
+                              displayIP, destinationPort);
+            Console.WriteLine(e.Message);
             return null;
         }
     }
 
-    public static IPAddress resolve_host(string master_host) {
-        Printer.DebugMessage("resolve_host('" + master_host + "')");
-        IPAddress address;
+    public static IPAddress[] ResolveHosts(string masterHostName,
+                                           AddressFamily protocolFamily) {
+        Printer.DebugMessage("resolveHosts('" + masterHostName + ", "
+                             + protocolFamily + "')");
         try {
-            address = IPAddress.Parse(master_host);
-            Printer.DebugMessage("'" + master_host + "' is already an IP address, no resolution required.");
-            return address;
+            IPAddress address = IPAddress.Parse(masterHostName);
+            Printer.DebugMessage("'" + masterHostName
+                                 + "' is already an IP address, no resolving"
+                                 + " required.");
+            Printer.DebugMessage(address.AddressFamily.ToString());
+            Printer.DebugMessage(protocolFamily.ToString());
+            if (AddressFamilyFits(address, protocolFamily)) {
+                Printer.DebugMessage("Was requested, so let's use it!");
+                return new IPAddress[]{address};
+            }
+            Printer.DebugMessage("Was NOT requested, so returning null.");
+
+            return null;
         }
         catch (Exception e) {
             Printer.DebugMessage(e.ToString());
-            Printer.DebugMessage(master_host + " is not a valid IP address. Trying to resolve it, assuming it is a host name...");
+            Printer.DebugMessage(masterHostName + " is not a valid IP address."
+                                 + " Trying to resolve it, assuming it is a"
+                                 + " host name...");
             try {
-                IPAddress[] ipaddresses = Dns.GetHostAddresses(master_host);
-                List<IPAddress> temp_ipaddresses = new List<IPAddress>();
+                IPAddress[] ipaddresses =
+                    Dns.GetHostEntry(masterHostName).AddressList;
+                List<IPAddress> temporaryIpAddresses = new List<IPAddress>();
                 foreach (IPAddress ipaddress in ipaddresses) {
-                    if (ipaddress.AddressFamily.ToString() == ProtocolFamily.InterNetwork.ToString()) {
-                        temp_ipaddresses.Add(ipaddress);
+                    if (ipaddress.AddressFamily == protocolFamily) {
+                        Printer.DebugMessage("Adding following resolved address"
+                                             + " to the list: " + ipaddress);
+                        temporaryIpAddresses.Add(ipaddress);
+                    }
+                    else {
+                        Printer.DebugMessage("Skipping " + ipaddress);
                     }
                 }
-                ipaddresses = temp_ipaddresses.ToArray();
+                ipaddresses = temporaryIpAddresses.ToArray();
                 if (ipaddresses.Length > 0) {
-                    address = ipaddresses[0];
-                } else {
-                    Printer.DebugMessage("Could not resolve " + master_host + " to a valid IP address.");
+                    Printer.DebugMessage("Resolved " + masterHostName + " to "
+                                         + ipaddresses.Length
+                                         + " IP addresses of type "
+                                         + protocolFamily + ".");
+                    return ipaddresses;
+                }
+                else {
+                    Printer.DebugMessage("Could not resolve " + masterHostName
+                                         + " to a valid IP address.");
                     return null;
                 }
-                Printer.DebugMessage("Resolved " + master_host + " to '" + address.ToString() + "'.");
-                return address;
             }
             catch (Exception e2) {
                 Printer.DebugMessage(e2.ToString());
-                Printer.DebugMessage("Could not resolve " + master_host + " to a valid IP address.");
+                Printer.DebugMessage("Could not resolve " + masterHostName
+                                     + " to a valid IP address.");
                 return null;
             }
         }
     }
+
+    public static bool IsIPv6Address(IPEndPoint Ip) {
+        return Ip.AddressFamily.ToString().Equals(
+            ProtocolFamily.InterNetworkV6.ToString());
+    }
+
+    public static bool IsIPv4Address(IPEndPoint Ip) {
+        return Ip.AddressFamily.ToString().Equals(
+            ProtocolFamily.InterNetwork.ToString());
+    }
+
+    public static bool IsIPv6Address(IPAddress Ip) {
+        return Ip.AddressFamily == AddressFamily.InterNetworkV6;
+    }
+
+    public static bool IsIPv4Address(IPAddress Ip) {
+        return Ip.AddressFamily == AddressFamily.InterNetwork;
+    }
+
+    public static bool IsIPv6Address(AddressFamily ipProtocol) {
+        return ipProtocol == AddressFamily.InterNetworkV6;
+    }
+
+    public static bool IsIPv4Address(AddressFamily ipProtocol) {
+        return ipProtocol == AddressFamily.InterNetwork;
+    }
+
+    public static bool AddressFamilyFits(IPAddress address,
+                                         AddressFamily protocolFamily) {
+        return address.AddressFamily.ToString().Equals(
+            protocolFamily.ToString());
+    }
+
 }

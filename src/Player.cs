@@ -3,20 +3,23 @@ public class Player {
     private int ping = 0;
     private string nick = "";
 
-    public Player (int new_frags, int new_ping, string new_nick) {
-        this.frags = new_frags;
-        this.ping = new_ping;
-        this.nick = new_nick;
+    public Player (int newFrags, int newPing, string newNick) {
+        this.frags = newFrags;
+        this.ping = newPing;
+        this.nick = newNick;
     }
 
+    //Currently unused:
     public int GetFrags() {
         return this.frags;
     }
 
+    //Currently unused:
     public int GetPing() {
         return this.ping;
     }
 
+    //Currently unused:
     public string GetNick() {
         return this.nick;
     }

@@ -5,12 +5,10 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-public class HelpWindow : Form
-{
+public class HelpWindow : Form {
     private Gui origin;
 
-    public HelpWindow(Gui sourceWindow)
-    {
+    public HelpWindow(Gui sourceWindow) {
         if (sourceWindow.Icon != null) {
             this.Icon = sourceWindow.Icon;
         }
@@ -23,18 +21,21 @@ public class HelpWindow : Form
         this.ShowInTaskbar = true;
         CenterToScreen();
 
-        ToolTip button_tooltip = new ToolTip();
-        button_tooltip.SetToolTip(this, "This may help in using the master server.");
+        ToolTip buttonTooltip = new ToolTip();
+        buttonTooltip.SetToolTip(this,
+                                 "This may help in using the master server.");
 
-        Button close_button = new Button();
-        close_button.Text = "Close";
-        this.Controls.Add(close_button);
-        close_button.Parent = this;
-        CancelButton = close_button;
-        close_button.Click += new EventHandler (CloseThis);
-        button_tooltip.SetToolTip(close_button, "Closes this window and shows server list (ESC/Enter).");
-        Gui.CenterButton(close_button);
-        Gui.BottomButton(close_button);
+        Button closeButton = new Button();
+        closeButton.Text = "Close";
+        this.Controls.Add(closeButton);
+        closeButton.Parent = this;
+        CancelButton = closeButton;
+        closeButton.Click += new EventHandler (CloseThis);
+        buttonTooltip.SetToolTip(closeButton,
+                                 "Closes this window and shows server list"
+                                 + " (ESC/Enter).");
+        Gui.CenterButton(closeButton);
+        Gui.BottomButton(closeButton);
 
         TextBox helpText = new TextBox();
         helpText.Location = new Point(0,0);
@@ -44,13 +45,14 @@ public class HelpWindow : Form
         helpText.ScrollBars = ScrollBars.Vertical;
         helpText.ReadOnly = true;
         helpText.AutoSize = false;
-        helpText.Font = new Font(FontFamily.GenericMonospace, helpText.Font.Size);
+        helpText.Font = new Font(FontFamily.GenericMonospace,
+                                 helpText.Font.Size);
         string helpContent = Masterserver.consoleHelpText;
         helpContent += @"
 
 This program sets up a master server for the game »Star Trek: Voyager Elite Force«. The above options let you configure its behavior when started on the console. For details see the provided documentation. For looking up the currently active settings of this instance use the »Status« button in the main window.
 
-© 2020 by Martin Wohlauer.
+© 2025 by Martin Wohlauer.
 
  * You may use this program at your own leisure.
  * It comes free of charge.
@@ -59,13 +61,15 @@ This program sets up a master server for the game »Star Trek: Voyager Elite For
  * The source code of this software should come along with it. If not, ask the source from where you got this program, to provide it.
  * If in doubt about the technical implication, such as security, stability or any other technical fitnes, consult the source code.
  * You may alter the source code at your own discretion. If you do so, you are not allowed to remove the information of the original author and his copy right declaration. But you are encouraged to add your own name if you contributed to the project.";
-        string currentSystemType = System.Environment.OSVersion.Platform.ToString();
+        string currentSystemType =
+            System.Environment.OSVersion.Platform.ToString();
         if (currentSystemType.Equals("Win32NT")) {
             helpContent = Regex.Replace (helpContent, "\n", "\r\n");
         }
         helpText.Text = helpContent;
         helpText.Parent = this;
-        button_tooltip.SetToolTip(helpText, "Some explanations about this tool.");
+        buttonTooltip.SetToolTip(helpText,
+                                 "Some explanations about this tool.");
     }
 
     private void CloseThis(object sender, EventArgs e) {

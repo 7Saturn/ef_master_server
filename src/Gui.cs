@@ -4,16 +4,14 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
-public class Gui : Form
-{
+public class Gui : Form {
     private ListView serverListTable;
     private StatusBox statusBox;
     private HelpWindow helpBox;
 
     public delegate void DoRefreshFromOutside();
 
-    public Gui(string version)
-    {
+    public Gui(string version) {
         Printer.DebugMessage("Creating main window...");
         string icon48path = "graphics/ef_logo_48.ico";
         if (File.Exists(icon48path)) {
@@ -22,7 +20,8 @@ public class Gui : Form
             this.Icon = cornerIcon;
         }
         else {
-            Printer.DebugMessage(icon48path + " is missing, but it should be delivered along with this program.");
+            Printer.DebugMessage(icon48path + " is missing, but it should be"
+                                 + " delivered along with this program.");
         }
 
         this.Size = new Size(576,432);
@@ -34,45 +33,51 @@ public class Gui : Form
 
         DoRefresh();
 
-        Button exit_button = new Button();
-        exit_button.Text = "Exit";
-        ToolTip button_tooltip = new ToolTip(); //Can be used multiple times
+        Button exitButton = new Button();
+        exitButton.Text = "Exit";
+        ToolTip buttonTooltip = new ToolTip(); //Can be used multiple times
 
-        Button help_button = new Button();
-        help_button.Text = "?";
-        button_tooltip.SetToolTip(help_button, "Shows some help for the masterserver (F1)");
-        help_button.Location = new Point(135, 0);
-        help_button.Width=20;
-        help_button.Parent = this;
-        BottomButton(help_button);
-		help_button.Click += new EventHandler (ShowHelp); //Event (Button_Click)
+        Button helpButton = new Button();
+        helpButton.Text = "?";
+        buttonTooltip.SetToolTip(helpButton,
+                                 "Shows some help for the masterserver (F1)");
+        helpButton.Location = new Point(135, 0);
+        helpButton.Width=20;
+        helpButton.Parent = this;
+        BottomButton(helpButton);
+        helpButton.Click += new EventHandler (ShowHelp);
 
-        Button refresh_button = new Button();
-        refresh_button.Text = "Refresh";
-        button_tooltip.SetToolTip(refresh_button, "Refreshes the Masterserver list from memory (F5)");
-        this.Controls.Add(refresh_button);
-        refresh_button.Location = new Point(172, 0);
-        refresh_button.Parent = this;
-		refresh_button.Click += new EventHandler (Refresh); //Event (Button_Click)
-        BottomButton(refresh_button);
+        Button refreshButton = new Button();
+        refreshButton.Text = "Refresh";
+        buttonTooltip.SetToolTip(refreshButton,
+                                 "Refreshes the Masterserver list from memory"
+                                 + " (F5)");
+        this.Controls.Add(refreshButton);
+        refreshButton.Location = new Point(172, 0);
+        refreshButton.Parent = this;
+        refreshButton.Click += new EventHandler (Refresh);
+        BottomButton(refreshButton);
 
-        Button status_button = new Button();
-        status_button.Text = "Status";
-        button_tooltip.SetToolTip(status_button, "Shows current state and settings of the masterserver (F6)");
-        status_button.Location = new Point(265, 0);
-        status_button.Parent = this;
-		status_button.Click += new EventHandler (ShowStatus); //Event (Button_Click)
-        AcceptButton = status_button;
-        BottomButton(status_button);
+        Button statusButton = new Button();
+        statusButton.Text = "Status";
+        buttonTooltip.SetToolTip(statusButton,
+                                 "Shows current state and settings of the"
+                                 + " masterserver (F6)");
+        statusButton.Location = new Point(265, 0);
+        statusButton.Parent = this;
+        statusButton.Click += new EventHandler (ShowStatus);
+        AcceptButton = statusButton;
+        BottomButton(statusButton);
 
-        button_tooltip.SetToolTip(exit_button, "Closes the Masterserver (F7/ESC)");
-        this.Controls.Add(exit_button);
-        exit_button.Location = new Point(359, 0);
-        exit_button.Parent = this;
-        CancelButton = exit_button;
-		exit_button.Click += new EventHandler (Shutdown); //Event (Button_Click)
+        buttonTooltip.SetToolTip(exitButton,
+                                 "Closes the Masterserver (F7/ESC)");
+        this.Controls.Add(exitButton);
+        exitButton.Location = new Point(359, 0);
+        exitButton.Parent = this;
+        CancelButton = exitButton;
+        exitButton.Click += new EventHandler (Shutdown);
         this.FormClosing += new FormClosingEventHandler(Shutdown);
-        BottomButton(exit_button);
+        BottomButton(exitButton);
 
         CenterToScreen();
         #if SERVER
@@ -80,8 +85,7 @@ public class Gui : Form
         #endif
     }
 
-    private void Shutdown (object sender, EventArgs e)
-    {
+    private void Shutdown(object sender, EventArgs e) {
         Printer.DebugMessage("Shutdown was requested.");
         if (Masterserver.GetOtherMasterServerQueryThread() != null) {
             Printer.DebugMessage("Aborting query thread...");
@@ -92,8 +96,7 @@ public class Gui : Form
         Environment.Exit(0);
     }
 
-    private void Refresh (object sender, EventArgs e)
-    {
+    private void Refresh(object sender, EventArgs e) {
         Printer.DebugMessage("Refresh of main window was requested by button.");
         DoRefresh();
     }
@@ -106,25 +109,43 @@ public class Gui : Form
             this.Controls.Remove(serverListTable);
         }
         ListView tempList = new ListView();
-        ToolTip button_tooltip = new ToolTip(); //Can be used multiple times
-        button_tooltip.SetToolTip(tempList, "List of known servers. Click on an entry and press CTRL + C to copy its address and port.");
+        ToolTip buttonTooltip = new ToolTip(); //Can be used multiple times
+        buttonTooltip.SetToolTip(tempList,
+                                 "List of known servers. Click on an entry and"
+                                 + " press CTRL + C to copy its address and"
+                                 + " port.");
 
         tempList.KeyDown += CopyThat;
 
         tempList.BeginUpdate();
         InitalizeServerListTable(ref tempList);
         Printer.DebugMessage("Building List...");
-        List<ServerEntry> serverList = ServerList.get_list();
-        foreach (ServerEntry serverEntry in serverList) {
-            if (serverEntry.GetProtocol() != -1) {
-                Printer.DebugMessage("Adding List Items");
-                ListViewItem serverItem = ListItemFromStrings(serverEntry.GetAddress() + ":" + serverEntry.GetPort(),
-                                                              serverEntry.GetHostname(),
-                                                              serverEntry.GetProtocol().ToString(),
-                                                              serverEntry.IsEmpty() ? "yes" : "no",
-                                                              serverEntry.IsFull() ? "yes" : "no");
-                tempList.Items.Add(serverItem);
-                tempList.Sorting = SortOrder.Ascending;
+        List<ServerEntry> serverList = ServerList.GetList();
+        lock(serverList) {
+            serverList.Sort((x, y) => x.serverEntryinHex().CompareTo(
+                                y.serverEntryinHex()));
+            int counter = 0;
+            foreach (ServerEntry serverEntry in serverList) {
+                if (serverEntry.GetProtocol() != -1) {
+                    Printer.DebugMessage("Adding List Items");
+                    string gameServerAddress = serverEntry.GetAddressString();
+                    if (serverEntry.IsIpV6()) {
+                        gameServerAddress = "[" + gameServerAddress + "]";
+                    }
+                    counter++;
+                    ListViewItem serverItem = ListItemFromStrings(
+                        counter,
+                        gameServerAddress
+                        + ":"
+                        + serverEntry.GetPort(),
+                        serverEntry.GetHostname(),
+                        serverEntry.GetProtocol().ToString(),
+                        serverEntry.IsEmpty() ? "yes"
+                        : "no",
+                        serverEntry.IsFull() ? "yes"
+                        : "no");
+                    tempList.Items.Add(serverItem);
+                }
             }
         }
         Printer.DebugMessage("Adding Header...");
@@ -137,27 +158,26 @@ public class Gui : Form
 
     public void RefreshSafe() {
         Printer.DebugMessage("RefreshSafe");
-        if (serverListTable.InvokeRequired)
-        {
+        if (serverListTable.InvokeRequired) {
             Printer.DebugMessage("invoke");
             var d = new DoRefreshFromOutside(DoRefresh);
             Printer.DebugMessage("invoking...");
             serverListTable.Invoke(d);
         }
-        else
-        {
+        else {
             Printer.DebugMessage("normal");
             Refresh();
         }
-
     }
 
-    private ListViewItem ListItemFromStrings(string serverAndPort,
+    private ListViewItem ListItemFromStrings(int counter,
+                                             string serverAndPort,
                                              string hostname,
                                              string protocol,
                                              string isEmpty,
                                              string isFull) {
-        ListViewItem listElement = new ListViewItem(serverAndPort);
+        ListViewItem listElement = new ListViewItem(counter.ToString());
+        listElement.SubItems.Add(serverAndPort);
         listElement.SubItems.Add(hostname);
         listElement.SubItems.Add(protocol);
         listElement.SubItems.Add(isEmpty);
@@ -168,11 +188,12 @@ public class Gui : Form
     private void CopyThat(object sender, KeyEventArgs e) {
         if (e.Control && e.KeyCode == Keys.C) {
             Printer.DebugMessage("CTRL + C detected");
-            Printer.DebugMessage("Von der Liste!");
+            Printer.DebugMessage("From the list!");
             ListViewItem markedOne = serverListTable.FocusedItem;
             if (markedOne != null) {
-                Printer.DebugMessage(markedOne.ToString());
-                string serverAddress = markedOne.Text;
+                string serverAddress = markedOne.SubItems[1].Text;
+                Printer.DebugMessage("List row " + markedOne.ToString()
+                                     + " address: " + serverAddress);
                 Clipboard.SetText(serverAddress);
             }
         }
@@ -182,7 +203,9 @@ public class Gui : Form
         if (!e.Control && e.KeyCode == Keys.F5) {
             DoRefresh();
         }
-        else if (!e.Control && ((e.KeyCode == Keys.Escape) || (e.KeyCode == Keys.F7))) {
+        else if (   !e.Control
+                 && (   e.KeyCode == Keys.Escape
+                     || e.KeyCode == Keys.F7)) {
             Shutdown(sender, e);
         }
         else if (!e.Control && e.KeyCode == Keys.F6) {
@@ -193,17 +216,23 @@ public class Gui : Form
         }
     }
 
-
     private void SetTableHeader(ref ListView listView) {
         Printer.DebugMessage("SetTableHeader");
         // Create columns for the items and subitems.
         // Width of -1 indicates auto-size for data columns.
         // Width of -2 indicates auto-size for data header.
-        listView.Columns.Add("Server", 150, HorizontalAlignment.Left);
-        listView.Columns.Add("Host Name", 214, HorizontalAlignment.Left);
-        listView.Columns.Add("Protocol", 60, HorizontalAlignment.Center);
-        listView.Columns.Add("Is Empty", 60, HorizontalAlignment.Center);
-        listView.Columns.Add("Is Full", 45, HorizontalAlignment.Center);
+        listView.Columns.Add("No.",              -2 /*150*/,
+                             HorizontalAlignment.Left);
+        listView.Columns.Add("Game Server",      -2 /*150*/,
+                             HorizontalAlignment.Left);
+        listView.Columns.Add("Game Server Name", -2 /*214*/,
+                             HorizontalAlignment.Left);
+        listView.Columns.Add("Protocol",         -2 /* 60*/,
+                             HorizontalAlignment.Center);
+        listView.Columns.Add("Is Empty",         -2 /* 60*/,
+                             HorizontalAlignment.Center);
+        listView.Columns.Add("Is Full",          -2 /* 45*/,
+                             HorizontalAlignment.Center);
     }
 
     private void ShowStatus(object sender, EventArgs e) {
@@ -222,7 +251,7 @@ public class Gui : Form
         this.Hide();
     }
 
-    private void InitalizeServerListTable (ref ListView newListView) {
+    private void InitalizeServerListTable(ref ListView newListView) {
         Printer.DebugMessage("InitalizeServerListTable");
         newListView.Bounds = new Rectangle(new Point(10,10), new Size(549,353));
         // Set the view to show details.

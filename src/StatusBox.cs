@@ -4,28 +4,26 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
-public class StatusBox : Form
-{
+public class StatusBox : Form {
     private Gui origin;
-    private Label version_label = new Label();
-    private Label version_text = new Label();
-    private Label port_label = new Label();
-    private Label port_text = new Label();
-    private Label verbose_label = new Label();
-    private Label verbose_text = new Label();
-    private Label debug_label = new Label();
-    private Label debug_text = new Label();
-    private Label interval_label = new Label();
-    private Label interval_text = new Label();
-    private Label interface_label = new Label();
-    private Label interface_text = new Label();
-    private Label MasterServerList_label = new Label();
+    private Label versionLabel = new Label();
+    private Label versionText = new Label();
+    private Label portLabel = new Label();
+    private Label portText = new Label();
+    private Label verboseLabel = new Label();
+    private Label verboseText = new Label();
+    private Label debugLabel = new Label();
+    private Label debugText = new Label();
+    private Label intervalLabel = new Label();
+    private Label intervalText = new Label();
+    private Label interfaceLabel = new Label();
+    private Label interfaceText = new Label();
+    private Label MasterServerListLabel = new Label();
     private TextBox masterServerList = new TextBox();
     public const int leftColumnWith = 190;
     public const int rightColumnWith = 230;
 
-    public StatusBox(Gui sourceWindow)
-    {
+    public StatusBox(Gui sourceWindow) {
         if (sourceWindow.Icon != null) {
             this.Icon = sourceWindow.Icon;
         }
@@ -39,116 +37,150 @@ public class StatusBox : Form
         this.ShowInTaskbar = true;
         CenterToScreen();
 
-        ToolTip button_tooltip = new ToolTip(); //Can be used multiple times
-        button_tooltip.SetToolTip(this, "Here you can see the current configuration/status of the master server."); //Window explains itself. ;-)
+        ToolTip buttonTooltip = new ToolTip(); //Can be used multiple times
+        buttonTooltip.SetToolTip(this,
+                                 "Here you can see the current"
+                                 + " configuration/status of the master"
+                                 + " server."); //Window explains itself. ;-)
 
 
-        Button close_button = new Button();
-        close_button.Text = "Close";
-        this.Controls.Add(close_button);
-        close_button.Parent = this;
-        CancelButton = close_button;
-		close_button.Click += new EventHandler (CloseThis); //Event (Button_Click)
-        button_tooltip.SetToolTip(close_button, "Closes this window and shows server list (ESC/Enter).");
-        Gui.CenterButton(close_button);
-        Gui.BottomButton(close_button);
+        Button closeButton = new Button();
+        closeButton.Text = "Close";
+        this.Controls.Add(closeButton);
+        closeButton.Parent = this;
+        CancelButton = closeButton;
+        closeButton.Click += new EventHandler (CloseThis);
+        buttonTooltip.SetToolTip(closeButton,
+                                 "Closes this window and shows server list"
+                                 + " (ESC/Enter).");
+        Gui.CenterButton(closeButton);
+        Gui.BottomButton(closeButton);
 
-        version_label.Location = new Point(0,0);
-        version_label.Height = 20;
-        version_label.AutoSize = false;
-        version_label.Width = leftColumnWith;
-        version_label.Text = "Version of Masterserver:";
-        version_label.Parent = this;
-        button_tooltip.SetToolTip(version_label, "This is the version of this program.");
+        versionLabel.Location = new Point(0,0);
+        versionLabel.Height = 20;
+        versionLabel.AutoSize = false;
+        versionLabel.Width = leftColumnWith;
+        versionLabel.Text = "Version of Masterserver:";
+        versionLabel.Parent = this;
+        buttonTooltip.SetToolTip(versionLabel,
+                                 "This is the version of this program.");
 
-        version_text.Location = new Point(leftColumnWith,0);
-        version_text.Height = 20;
-        version_text.AutoSize = false;
-        version_text.Width = rightColumnWith;
-        version_text.Text = Masterserver.GetVersionString();
-        version_text.Parent = this;
-        button_tooltip.SetToolTip(version_text, "This is the version of this program.");
-
-
-        port_label.Location = new Point(0,20);
-        port_label.Height = 20;
-        port_label.AutoSize = false;
-        port_label.Width = leftColumnWith;
-        port_label.Text = "Used port:";
-        port_label.Parent = this;
-        button_tooltip.SetToolTip(port_label, "This is the network port the server is listening on.");
-
-        port_text.Location = new Point(leftColumnWith,20);
-        port_text.Height = 20;
-        port_text.AutoSize = false;
-        port_text.Width = rightColumnWith;
-        port_text.Text = Masterserver.GetPort().ToString() + " (UDP)";
-        port_text.Parent = this;
-        button_tooltip.SetToolTip(port_text, "This is the network port the server is listening on.");
+        versionText.Location = new Point(leftColumnWith,0);
+        versionText.Height = 20;
+        versionText.AutoSize = false;
+        versionText.Width = rightColumnWith;
+        versionText.Text = Masterserver.GetVersionString();
+        versionText.Parent = this;
+        buttonTooltip.SetToolTip(versionText,
+                                 "This is the version of this program.");
 
 
-        verbose_label.Location = new Point(0,40);
-        verbose_label.Height = 20;
-        verbose_label.AutoSize = false;
-        verbose_label.Width = leftColumnWith;
-        verbose_label.Text = "Console output is verbose:";
-        verbose_label.Parent = this;
-        button_tooltip.SetToolTip(verbose_label, "Is the console output a little more elaborate?");
+        portLabel.Location = new Point(0,20);
+        portLabel.Height = 20;
+        portLabel.AutoSize = false;
+        portLabel.Width = leftColumnWith;
+        portLabel.Text = "Used port:";
+        portLabel.Parent = this;
+        buttonTooltip.SetToolTip(portLabel,
+                                 "This is/are the network port(s) the server"
+                                 + " is listening on.");
 
-        verbose_text.Location = new Point(leftColumnWith,40);
-        verbose_text.Height = 20;
-        verbose_text.AutoSize = false;
-        verbose_text.Width = rightColumnWith;
-        verbose_text.Text = Printer.GetVerbose() ? "yes" : "no";
-        verbose_text.Parent = this;
-        button_tooltip.SetToolTip(verbose_text, "Is the console output a little more elaborate?");
-
-
-        debug_label.Location = new Point(0,60);
-        debug_label.Height = 20;
-        debug_label.AutoSize = false;
-        debug_label.Width = leftColumnWith;
-        debug_label.Text = "Using debug output on console:";
-        debug_label.Parent = this;
-        button_tooltip.SetToolTip(debug_label, "Is the console output very detailed?");
-
-        debug_text.Location = new Point(leftColumnWith,60);
-        debug_text.Height = 20;
-        debug_text.AutoSize = false;
-        debug_text.Width = rightColumnWith;
-        debug_text.Text = Printer.GetDebug() ? "yes" : "no";
-        debug_text.Parent = this;
-        button_tooltip.SetToolTip(debug_text, "Is the console output very detailed?");
+        portText.Location = new Point(leftColumnWith,20);
+        portText.Height = 20;
+        portText.AutoSize = false;
+        portText.Width = rightColumnWith;
+        string port = Masterserver.GetPortV4().ToString() + " (UDPv4)";
+        if (Masterserver.InV6Mode()) {
+            port += ", " + Masterserver.GetPortV6().ToString() + " (UDPv6)";
+        }
+        portText.Text = port;
+        portText.Parent = this;
+        buttonTooltip.SetToolTip(portText,
+                                 "This displays the network port(s) the"
+                                 + " server is listening on.");
 
 
-        interface_label.Location = new Point(0,80);
-        interface_label.Height = 20;
-        interface_label.AutoSize = false;
-        interface_label.Width = leftColumnWith;
-        interface_label.Text = "Master server listening on:";
-        interface_label.Parent = this;
-        button_tooltip.SetToolTip(interface_label, "Network interface the master server is listening on.");
+        verboseLabel.Location = new Point(0,40);
+        verboseLabel.Height = 20;
+        verboseLabel.AutoSize = false;
+        verboseLabel.Width = leftColumnWith;
+        verboseLabel.Text = "Console output is verbose:";
+        verboseLabel.Parent = this;
+        buttonTooltip.SetToolTip(verboseLabel,
+                                 "Is the console output a little more"
+                                 + " elaborate?");
 
-        interface_text.Location = new Point(leftColumnWith,80);
-        interface_text.Height = 20;
-        interface_text.AutoSize = false;
-        interface_text.Width = rightColumnWith;
-        interface_text.Text = Masterserver.GetMasterServerListeningInterface();
-        interface_text.Parent = this;
-        button_tooltip.SetToolTip(interface_text, "Network interface the master server is listening on.");
+        verboseText.Location = new Point(leftColumnWith,40);
+        verboseText.Height = 20;
+        verboseText.AutoSize = false;
+        verboseText.Width = rightColumnWith;
+        verboseText.Text = Printer.GetVerbose() ? "yes" : "no";
+        verboseText.Parent = this;
+        buttonTooltip.SetToolTip(verboseText,
+                                 "Is the console output a little more"
+                                 + " elaborate?");
 
 
-        MasterServerList_label.Location = new Point(0,100);
-        MasterServerList_label.Height = 20;
-        MasterServerList_label.AutoSize = false;
-        MasterServerList_label.Width = leftColumnWith;
-        MasterServerList_label.Text = "Master server list:";
-        MasterServerList_label.Parent = this;
-        button_tooltip.SetToolTip(MasterServerList_label, "What other master servers are queried?");
+        debugLabel.Location = new Point(0,60);
+        debugLabel.Height = 20;
+        debugLabel.AutoSize = false;
+        debugLabel.Width = leftColumnWith;
+        debugLabel.Text = "Using debug output on console:";
+        debugLabel.Parent = this;
+        buttonTooltip.SetToolTip(debugLabel,
+                                 "Is the console output very detailed?");
+
+        debugText.Location = new Point(leftColumnWith,60);
+        debugText.Height = 20;
+        debugText.AutoSize = false;
+        debugText.Width = rightColumnWith;
+        debugText.Text = Printer.GetDebug() ? "yes" : "no";
+        debugText.Parent = this;
+        buttonTooltip.SetToolTip(debugText,
+                                 "Is the console output very detailed?");
+
+
+        interfaceLabel.Location = new Point(0,80);
+        interfaceLabel.Height = 20;
+        interfaceLabel.AutoSize = false;
+        interfaceLabel.Width = leftColumnWith;
+        interfaceLabel.Text = "Master server listening on:";
+        interfaceLabel.Parent = this;
+        buttonTooltip.SetToolTip(interfaceLabel,
+                                 "Network interface(s) the master server is"
+                                 + " listening on.");
+
+        interfaceText.Location = new Point(leftColumnWith,80);
+        interfaceText.Height = 20;
+        interfaceText.AutoSize = false;
+        interfaceText.Width = rightColumnWith;
+        string listeningInterfaces =
+            Masterserver.GetMasterServerListeningInterfaceV4();
+        if (Masterserver.InV6Mode()) {
+            listeningInterfaces += ", ";
+            listeningInterfaces +=
+                Masterserver.GetMasterServerListeningInterfaceV6();
+        }
+        interfaceText.Text = listeningInterfaces;
+        interfaceText.Parent = this;
+        buttonTooltip.SetToolTip(interfaceText,
+                                 "Network interface(s) the master server is"
+                                 + " listening on.");
+
+
+        MasterServerListLabel.Location = new Point(0,100);
+        MasterServerListLabel.Height = 20;
+        MasterServerListLabel.AutoSize = false;
+        MasterServerListLabel.Width = leftColumnWith;
+        MasterServerListLabel.Text = "Master server list:";
+        MasterServerListLabel.Parent = this;
+        buttonTooltip.SetToolTip(MasterServerListLabel,
+                                 "What other master servers are queried?");
 
         string masterServerListString = "";
         string[] masterServerListStrings = Masterserver.GetMasterServerSources();
-        if (masterServerListStrings == null || masterServerListStrings.Length == 0) {
+        if (   masterServerListStrings == null
+            || masterServerListStrings.Length == 0) {
             masterServerListString = "No servers provided, feature inactive";
         }
         else if (masterServerListStrings.Length == 1) {
@@ -165,35 +197,41 @@ public class StatusBox : Form
         this.masterServerList.AcceptsTab = false;
         this.masterServerList.Multiline = true;
         this.masterServerList.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-        button_tooltip.SetToolTip(masterServerList, "What other master servers are queried?");
+        buttonTooltip.SetToolTip(masterServerList,
+                                 "What other master servers are queried?");
         masterServerList.Parent = this;
 
 
-        interval_label.Location = new Point(0,280);
-        interval_label.Height = 20;
-        interval_label.AutoSize = false;
-        interval_label.Width = leftColumnWith;
-        interval_label.Text = "Master server query interval:";
-        interval_label.Parent = this;
-        button_tooltip.SetToolTip(interval_label, "Interval other master servers are queried.");
+        intervalLabel.Location = new Point(0,280);
+        intervalLabel.Height = 20;
+        intervalLabel.AutoSize = false;
+        intervalLabel.Width = leftColumnWith;
+        intervalLabel.Text = "Master server query interval:";
+        intervalLabel.Parent = this;
+        buttonTooltip.SetToolTip(intervalLabel,
+                                 "Interval other master servers are queried.");
 
-        interval_text.Location = new Point(leftColumnWith,280);
-        interval_text.Height = 20;
-        interval_text.AutoSize = false;
-        interval_text.Width = rightColumnWith;
+        intervalText.Location = new Point(leftColumnWith,280);
+        intervalText.Height = 20;
+        intervalText.AutoSize = false;
+        intervalText.Width = rightColumnWith;
         if (Masterserver.GetMasterServerQueryInterval() > 0) {
-            interval_text.Text = Masterserver.GetMasterServerQueryInterval().ToString() + " Seconds";
+            intervalText.Text =
+                Masterserver.GetMasterServerQueryInterval().ToString()
+                + " Seconds";
         }
         else {
-            if (masterServerListStrings != null && masterServerListStrings.Length != 0) {
-                interval_text.Text = "Not applied (feature not active)";
+            if (   masterServerListStrings != null
+                && masterServerListStrings.Length != 0) {
+                intervalText.Text = "Not applied (feature not active)";
             }
             else {
-                interval_text.Text = "Not applied (query only once at startup)";
+                intervalText.Text = "Not applied (query only once at startup)";
             }
         }
-        interval_text.Parent = this;
-        button_tooltip.SetToolTip(interval_text, "Interval other master servers are queried.");
+        intervalText.Parent = this;
+        buttonTooltip.SetToolTip(intervalText,
+                                 "Interval other master servers are queried.");
     }
 
     private void CloseThis(object sender, EventArgs e) {
